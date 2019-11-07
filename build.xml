@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<project xmlns:ht="happytrails" name="Amazon-hub-counter-api-docs-1.0" basedir="." default="release" xmlns:coral="antlib:com.amazon.coral">
+
+    <!-- Import HappyTrails, HappierTrails and Coral helpers -->
+    <import file="${happytrails.root}/happytrails.xml" optional="false"/>
+
+    <property name="checkstyle.failOnError" value="false"/>
+    <property name="ht.include.cfg" value="true" />
+
+    <ht:import file="generate-wrapper.xml" optional="false"/>
+    <ht:import file="happier-trails.xml" optional="false"/>
+                                
+    <target name="apollo-script" extensionOf="ht-post-build">
+        <generate-wrapper target="${output.dir}/bin/Amazon-hub-counter-api-docs.sh"
+            classname="com.amazon.sample.Amazon_hub_counter_api_docs">
+
+            <jvmarg value="-XX:+UseG1GC"/>
+            <jvmarg value="-XX:MaxGCPauseMillis=100"/>
+            <jvmarg value="-XX:+PerfDisableSharedMem"/>
+            
+            <!-- Kill on OOM (logscan for PMAdmin.log will trigger an alarm) -->
+            <jvmarg value="-XX:+ExitOnOutOfMemoryError"/>
+
+            <sysproperty key="javax.net.ssl.trustStore" value="certs/InternalAndExternalTrustStore.jks"/>
+            <sysproperty key="javax.net.ssl.trustStorePassword" value="amazon"/>
+
+            <sysproperty key="log4j.configurationFile" value="file:${ENVROOT}/log-configuration/log4j2.xml" escape="false"/>
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
+            <sysproperty key="Log4jContextSelector" value="org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"/>
+
+            <sysproperty key="root" value="${ENVROOT}" escape="false"/>
+
+        </generate-wrapper>
+    </target>
+
+    <!-- Set up a private config area to support the 'run' target -->
+    <target name="copy-configuration">
+        <copy todir="${output.dir}/private">
+            <fileset dir="${bp:run.configfarm.brazil-config}">
+                <include name="brazil-config/**/*"/>
+            </fileset>
+            <fileset dir="${bp:run.configfarm.certs}">
+                <include name="certs/**/*"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="run" depends="build, copy-configuration">
+        <java classname="com.amazon.sample.Amazon_hub_counter_api_docs" classpath="${bp:run.classpath}" fork="true">
+            <env key="LD_LIBRARY_PATH"  value="${bp:run.lib}"/>
+            <jvmarg value="-Xmx256M"/>
+            <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
+            <jvmarg value="-Dsun.net.inetaddr.ttl=60"/>
+            <jvmarg value="-Dsun.net.inetaddr.negative.ttl=1"/>
+            <jvmarg line="-XX:+UseG1GC"/>
+            <jvmarg line="-XX:MaxGCPauseMillis=100"/>
+
+            <!-- Uncomment this line to allow remote debugging of your `bb run`
+                 See https://w.amazon.com/index.php/JavaRemoteDebug for more information.
+                 <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5050" />
+            -->
+            <jvmarg value="-Droot=${output.dir}/private"/>
+            <arg value="--root=${output.dir}/private"/>
+            <arg value="--domain=test"/>
+            <arg value="--realm=USAmazon"/>
+
+            <sysproperty key="javax.net.ssl.trustStore" value="${output.dir}/private/certs/InternalAndExternalTrustStore.jks"/>
+            <sysproperty key="javax.net.ssl.trustStorePassword" value="amazon"/>
+
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager" />
+            <sysproperty key="Log4jContextSelector" value="org.apache.logging.log4j.core.async.AsyncLoggerContextSelector" />
+            <sysproperty key="log4j.configurationFile" value="${basedir}/configuration/log-configuration/log4j2-test.xml" />
+            <sysproperty key="java.io.tmpdir" value="${output.dir}/private/var/tmp" />
+        </java>
+    </target>
+
+</project>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="ERROR">
+    <Properties>
+        <Property name="log-path">${sys:root}/var/output/logs</Property>
+    </Properties>
+    <Appenders>
+        <AmazonRollingRandomAccessFile name="APPLICATION" filePattern="${log-path}/application.log.%d{yyyy-MM-dd-HH}" >
+            <PatternLayout>
+                <pattern>%d{dd MMM yyyy HH:mm:ss,SSS} %highlight{[%p]} %X{RequestId} (%t) %c: %m%n</pattern>
+            </PatternLayout>
+        </AmazonRollingRandomAccessFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="APPLICATION"/>
+        </Root>
+        <!-- Disables wire logging -->
+        <Logger name="WIRE" level="OFF" />
+        <Logger name="com.amazon.coral" level="WARN"/>
+        <Logger name="com.amazon.coral.reflect" level="ERROR"/>
+        <Logger name="org.apache" level="WARN"/>
+    </Loggers>
+</Configuration>

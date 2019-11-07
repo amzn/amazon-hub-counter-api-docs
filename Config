@@ -1,0 +1,74 @@
+# -*-perl-*-
+
+package.Amazon-hub-counter-api-docs = {
+    interfaces = (1.0);
+    deploy = {
+        generic = true;
+    };
+
+    build-environment = {
+        chroot = basic;
+        network-access = blocked;
+    };
+
+    dependencies = {
+        1.0 = {
+
+            #AppConfig
+            GuiceAppConfig = 1.1;
+
+            #Guice
+            GoogleGuice = 4.x;
+
+            # Metrics
+            CoralMetricsQuerylogReporter = 1.1;
+
+            # Logging
+            log4j = 2.8;
+        };
+    };
+
+    test-dependencies = {
+        1.0 = {
+            junit = 4.12;
+        };
+    };
+
+    runtime-dependencies = {
+        1.0 = {
+            JDK8 = 1.0;
+            MonitoringCore = 1.0;
+            ServiceMonitoring = 2.0;
+            WebsiteLogPusher = 3.4;
+            AmazonCACerts = 1.0;
+            MinimalProcessManager = 1.0;
+
+            # Logging
+            AmazonFileAppenderJava = 2.8;
+            Log4j-1_2-api = 2.8;
+            Jul-over-log4j2 = 2.x; # Guava will occasionally log to java.util.log
+        };
+    };
+
+    resolves-conflict-dependencies = {
+        1.0 = {
+
+        };
+    };
+
+    build-system = happytrails;
+    build-tools = {
+        1.0 = {
+            OpenJDK8 = 1.1;
+            HappierTrails = 3.3;
+            Cloud9JavaWrapperGenerator = 1.0;
+        };
+    };
+
+    # For more information on how to declare targets for HappyTrails packages
+    # see: https://w.amazon.com/?BrazilBuildSystem/HappyTrails/GettingStarted
+    # Generated via ZeusOctaneTemplate
+    targets = {
+        Amazon-hub-counter-api-docs-1.0 = { type = javalibrary; };
+    };
+};
