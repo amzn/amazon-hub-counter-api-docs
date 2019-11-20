@@ -756,8 +756,7 @@ paths:
         - in: header
           name: 'Content-Type'
           description: |
-            The `Content-Type` header is required for this method and ***must*** match be exactly `application/json`. 
-            > **NOTE**: Sending `application/json; charset=utf-8` will make the request fail.
+            The `Content-Type` header is required for this method and must be `application/json`. 
           schema:
             type: string
             default: 'application/json'
