@@ -1,11 +1,10 @@
 ---
 layout: default
-title: "Access Points API Docs"
+title: "Amazon Hub Counter API Docs"
 ---
 
 <html>
   <head>
-    <title>Access Points API Docs</title>
     <!-- needed for adaptive design -->
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
