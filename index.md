@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Access Points API Docs"
+title: "Amazon Hub Counter API Docs"
 ---
 
 <html>

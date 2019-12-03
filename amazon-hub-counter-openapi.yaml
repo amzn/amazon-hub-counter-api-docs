@@ -29,14 +29,14 @@ info:
     
     `Developer Console > Settings > Security Profiles` *(Figure 1)*.
 
-    > ![Security Profile Management](assets/security_profiles_1.png)
+    > ![Security Profile Management](amazon-hub-counter-api-docs/assets/security_profiles_1.png)
     > *Figure 1 - Security Profile Management*
 
     You can now create a New Security Profile by providing following information *(Figure 2)*:
     1. **Security Profile Name**: A name for this security profile, for example: _AccessPoints-YourCompanyName-Sandbox-Profile_ or _AccessPointsYourCompanyName-Production-Profile_.
     2. **Security Profile Description**: A description for this security profile.
 
-    > ![Create a new Security Profile](assets/security_profiles_2.png)
+    > ![Create a new Security Profile](amazon-hub-counter-api-docs/assets/security_profiles_2.png)
     > *Figure 2 - Create a new Security Profile*
 
     Clicking the ***Save*** button will create your security profile. You can now access the Web Settings tab containing the following information *(Figure 3)*:
@@ -46,7 +46,7 @@ info:
 
     The Client ID and Client Secret that have been created will allow you to securely identify with the Amazon Access Points Onboarding API. You will need both of these in order to receive your access tokens and authenticate with the API.  
 
-    > ![Security Profile Web Settings](assets/security_profiles_3.png)
+    > ![Security Profile Web Settings](amazon-hub-counter-api-docs/assets/security_profiles_3.png)
     > *Figure 3 - Security Profile Web Settings*
 
     > **NOTE**: The Client ID is different from the Security Profile ID available from the General tab of your security profile. There is no need to share the Security Profile ID with Amazon.
@@ -58,7 +58,7 @@ info:
     
     This is because your Client IDs must be enabled by Amazon in order for you to be able to access the Access Point Onboarding API and move to the next step.
 
-    > ![Getting the Security Profile Client ID](assets/security_profiles_4.gif)
+    > ![Getting the Security Profile Client ID](amazon-hub-counter-api-docs/assets/security_profiles_4.gif)
 
     # Endpoints
     
