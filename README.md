@@ -1,11 +1,6 @@
-## My Project
+## Amazon Hub Counter API Docs
 
-TODO: Fill this README out!
-
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
+This repository serves the documentation and the up-to-date OpenAPI spec of the Amazon Hub Counter API.
 
 ## License Summary
 
