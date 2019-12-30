@@ -953,6 +953,7 @@ components:
         accessPointId:
           type: string
           example: 'ACM-0045'
+          pattern: '^(?!\\s*$).+'
           description: |
             Unique identifier for a single Access Point. The same location must be always identified by the same accessPointId. You cannot change the accessPointId for an already created location. Also, it is not possible to upload the same active location twice with two different accessPointIds.
 
@@ -968,6 +969,7 @@ components:
           type: string
           example: 'Amazon Hub Counter - Acme Manchester'
           maximum: 50
+          pattern: '^(?!\\s*$).+'
           description: |
             The customer-facing business name for this location, prepended by the fixed string `Amazon Hub Counter - `. 
             
@@ -1068,6 +1070,7 @@ components:
               type: string
               example: '123 Fellowman Road'
               maximum: 180
+              pattern: '^(?!\\s*$).+'
               description: |
                 Street address:
                 
@@ -1111,6 +1114,8 @@ components:
             city:
               type: string
               example: 'Manchester'
+              maximum: 50
+              pattern: '^(?!\\s*$).+'
               description: |
                 The city where the Access Point is located.
 
@@ -1118,6 +1123,7 @@ components:
             region:
               type: string
               example: null
+              maximum: 50
               description: |
                 The region where the Access Point is located.
 
@@ -1127,6 +1133,7 @@ components:
             district:
               type: string
               example: Greater Manchester
+              maximum: 50
               description: |
                 The district/county where the Access Point is located.
 
@@ -1134,6 +1141,8 @@ components:
             postalCode:
               type: string
               example: WA34 9PS
+              maximum: 20
+              pattern: '^(?!\\s*$).+'
               description: |
                 The Access Point postal code. 
 
@@ -1418,6 +1427,11 @@ components:
             - INVALID_LONGITUDE
             - INVALID_CITY
             - INVALID_ADDRESS_FIELD_ONE
+            - INVALID_ADDRESS_FIELD_TWO
+            - INVALID_ADDRESS_FIELD_THREE
+            - INVALID_POSTAL_CODE
+            - INVALID_REGION
+            - INVALID_DISTRICT
             - DUPLICATE_STORE_ENTRY
             - INVALID_ISACTIVE_FLAG_STATE
             - INVALID_STORE_STATE
@@ -1454,13 +1468,18 @@ components:
             * `INVALID_COUNTRY_CODE`
             * `INVALID_LATITUDE`
             * `INVALID_LONGITUDE`
-            * `INVALID_CITY`
-            * `INVALID_ADDRESS_FIELD_ONE`
+            * `INVALID_CITY` - city should be a non-empty string within 50 characters limit. Sample error message: [INVALID_CITY] expected maxLength: 50, actual: 61
+            * `INVALID_ADDRESS_FIELD_ONE` - addressFieldOne should be a non-empty string within 180 characters limit. Sample error message: [INVALID_ADDRESS_FIELD_ONE] expected maxLength: 180, actual: 216
+            * `INVALID_ADDRESS_FIELD_TWO` - If provided, addressFieldTwo should be a non-empty string within 60 characters limit. Sample error message: [INVALID_ADDRESS_FIELD_TWO] addressFieldTwo should not be greater than 60 characters.
+            * `INVALID_ADDRESS_FIELD_THREE` - If provided, addressFieldThree should be a non-empty string within 60 characters limit. Sample error message: [INVALID_ADDRESS_FIELD_THREE] addressFieldThree should not be greater than 60 characters.
+            * `INVALID_POSTAL_CODE` - postalCode should be a non-empty string within 20 characters limit. Sample error message: [INVALID_POSTAL_CODE] expected maxLength: 20, actual: 61
+            * `INVALID_REGION` - If provided, region should be a non-empty string within 50 characters limit. Sample error message: [INVALID_REGION] region should not be greater than 50 characters.
+            * `INVALID_DISTRICT` - If provided, district should be a non-empty string within 50 characters limit. Sample error message: [INVALID_DISTRICT] district should not be greater than 50 characters.
             * `DUPLICATE_STORE_ENTRY` - A given access point entry is duplicated based on its id. Sample error message: [DUPLICATE_STORE_ENTRY] This is a duplicate store entry, index occurrences are: [1, 2]
             * `INVALID_ISACTIVE_FLAG_STATE` - isActive flag value has not expected value. For example, to create an access point isActive flag value has to be true. Sample error message: [INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.
             * `INVALID_STORE_STATE` - This error code indicates that store is not in a valid state to perform certain operation. For example, a store cannot be marked as active or inactive if it exists in planned state. Sample error message: [INVALID_STORE_STATE] Store is in planned state, cannot be updated to active or inactive state.
             * `STORE_CREATION_FAILURE` - Failure in Amazon services, please report this error to Amazon and retry.
-            * `STORE_UPDATION_FAILURE`
+            * `STORE_UPDATION_FAILURE` - Failure in Amazon services, please report this error to Amazon and retry.
             * `UNABLE_TO_UPDATE_STORE_STATUS`
             * `UNABLE_TO_UPDATE_STORE_CAPABILITY`
             * `UNABLE_TO_UPDATE_STORE_CAPABILITY_STATUS`
