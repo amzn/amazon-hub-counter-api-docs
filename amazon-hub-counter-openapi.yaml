@@ -1182,7 +1182,7 @@ components:
         standardHours:
           type: array
           description: 'An array containing location standard opening hours.'
-          minItems: 1
+          minItems: 2
           items:
             type: object
             properties:
