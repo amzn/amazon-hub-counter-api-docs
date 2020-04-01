@@ -7,19 +7,17 @@ info:
     This guide is intended for Amazon Hub Counter partners who wish to integrate with the Access Points Onboarding API. This API enables partners to programmatically create, update and disable locations in Amazon systems.
     
     Throughout this guide, partner developers can learn how to:
-    1. Create a developer account and security profiles to access Sandbox and Production API environments.
+    1. Create a developer account and security profile to access relevant API environments.
     2. Request and use an authentication token to access the API.
     3. Create, update and disable locations through the API.
 
     In the scope of this document we will refer to partner locations also as Access Point locations.
 
     # Developer Account Registration Process
-    Two security profiles must be created to access the Access Points API:
-    1. A Production security profile to access the production environment.
-    2. A Sandbox security profile to access the Sandbox (test) environment. Register as an Amazon developer on https://developer.amazon.com/ to create a security profile.
+    A security profile must be created to access the Access Points API: Register as an Amazon developer on https://developer.amazon.com/ to create a security profile.
     > **NOTE**: The email used for this account should be one dedicated for this purpose (e.g. amazon-pickup@corpdomain.com).
     
-    > **NOTE**: Use dedicated security profiles for Access Points Partner Onboarding API. Do not use the same security profiles for other use cases.
+    > **NOTE**: Use a dedicated security profile for Access Points Partner Onboarding API. Do not use the same security profile for other use cases.
 
     ## Setting up a new Security Profile
     Access https://developer.amazon.com/ using an existing Amazon Account or a new Amazon Developer Account to create a security profile.
@@ -40,7 +38,7 @@ info:
 
      Create security profile by clicking the ***Save*** button. This gives access to the Web Settings tab containing the following information *(Figure 3)*:
 
-    1. **Client ID**:  A client identifier used for application to receive the OAuth token. This identifier must be shared with relevant Amazon representative in order to enable access the API.
+    1. **Client ID**:  A client identifier used for application to receive the OAuth token. This identifier must be input into Partner Central in order to enable access the API.
     2. **Client Secret**: Client secret or password (do not share secret with Amazon representatives or anyone else).
 
     The Client ID and Client Secret that have been created allows secure identification with Amazon Access Points Onboarding API. Both are needed of these in order to receive access tokens and authenticate with the API.  
@@ -50,14 +48,15 @@ info:
 
     > **NOTE**: Client ID is different to the Security Profile ID available from the General tab of the security profile. There is no need to share the Security Profile ID with Amazon.
 
-    > **NOTE**: Complete the following process twice to generate a Security Profile which will be granted access to the Sandbox environment and once more to access the Production environment.
 
     ### Submitting Client IDs to Amazon
-    After creating Sandbox and Production Client ID, this information needs to be shared with relevant Amazon representative as soon as possible. 
-    
-    This is because Client IDs must be enabled by Amazon in order to access the Access Point Onboarding API and progress to the next step.
+    If the partner is located in North America or Europe, they should submit their Client ID to Partner Central as soon as possible.
 
-    > ![Getting the Security Profile Client ID](assets/security_profiles_4.gif)
+    If the Partner is located in Asia Pacific, Australia or Mexico, they should submit the Client ID to their Amazon representative as soon as possible.
+    
+    This will allow Amazon to enable the Client ID which will, in turn, allow the partner to access the Access Point Onboarding API and progress to the next step.
+
+    > ![Locating the Security Profile Client ID](assets/security_profiles_4.gif)
 
     # Endpoints
     
@@ -67,7 +66,7 @@ info:
     |--------|--------------------------------------|
     |   All  | https://api.amazon.com/auth/o2/token |
 
-    > **NOTE**: When obtaining the access token, endpoint is the same for all regions and environments.
+    > **NOTE**: When obtaining the access token, the endpoint is the same for all regions and environments.
 
     ## Sandbox
 
