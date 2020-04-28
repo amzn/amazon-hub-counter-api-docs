@@ -30,7 +30,7 @@ info:
     > *Figure 1 - Security Profile Management*
 
     Then create a new Security Profile by providing following information *(Figure 2)*:
-    1. **Security Profile Name**: A name for this security profile. For example: _AccessPoints-YourCompanyName-Sandbox-Profile_ or _AccessPointsYourCompanyName-Production-Profile_.
+    1. **Security Profile Name**: A name for this security profile. For example: _AccessPointsYourCompanyName-Production-Profile_.
     2. **Security Profile Description**: A brief description of this security profile.
 
     > ![Create a new Security Profile](assets/security_profiles_2.png)
@@ -211,6 +211,20 @@ info:
                 </td>
             </tr>
             <tr>
+                <td>40X</td>
+                <td>Invalid input feed</td>
+                <td>This error will be thrown when there is an error in parsing the input JSON document.</td>
+                <td>
+                  <code>
+                  { <br/>
+                    &nbsp;&nbsp;&nbsp;  "message": "Input Feed is not valid. Please read the API specification document."<br/>
+                    &nbsp;&nbsp;&nbsp; "retryable": "true" <br/>
+                  } <br/>
+                  </code>
+                </td>
+            </tr>
+
+            <tr>
                 <td>500</td>
                 <td>Access Point API internal server error</td>
                 <td>This error will be thrown when there is a server-side issue.</td>
@@ -219,6 +233,19 @@ info:
                   { <br/>
                     &nbsp;&nbsp;&nbsp; "message": "An error occurred, please try again later."<br/>
                     &nbsp;&nbsp;&nbsp; "retryable": "true" <br/>
+                  } <br/>
+                  </code>
+                </td>
+            </tr>
+            <tr>
+                <td>50X</td>
+                <td>Data configuration error</td>
+                <td>This error will be thrown when there is an incorrect configuration of clientId to partnerId mapping in downstream service APUMS.</td>
+                <td>
+                  <code>
+                  { <br/>
+                    &nbsp;&nbsp;&nbsp; "message": "[DATA_CONFIGURATION_ERROR] There is some configuration issue. Please contact Amazon Hub representative." <br/>
+                    &nbsp;&nbsp;&nbsp; "retryable": "false" <br/>
                   } <br/>
                   </code>
                 </td>
