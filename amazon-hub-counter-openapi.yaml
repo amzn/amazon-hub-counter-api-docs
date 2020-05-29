@@ -102,7 +102,7 @@ info:
     No, you need to submit every future exceptional closure on each feed update. If you don't send the update again, the previously created ones will be delete as they are overwritten on every update.
     
     #### Are there any requirements for the format of the latitude and longitude properties?
-    We support positive and negative digits and `.` (dot) as the decimal separator. The values must always be to 6 decimal places, ranging from -90 to 90 for latitude and -180 to 180 for longitude.
+    We support positive and negative digits and `.` (dot) as the decimal separator. The values must always be to 6 decimal places, ranging from -90 to 90 for latitude and -180 to 180 for longitude. The combination of 0,0 for both latitude and longitude will throw an error. 
     
     #### Why am I not able to get the LWA token while invoking api.amazon.com?
     Please validate following:
@@ -1176,7 +1176,7 @@ components:
               type: string
               example: '79.290182'
               description: |
-                Access Point latitude to 6 decimal places.
+                Access Point latitude to 6 decimal places. An error will be thrown if value is zero for both latitude and longitude.
 
                 E.g. `79.290182`
               pattern: '[+-]?\\d*\\.?\\d+'
@@ -1184,7 +1184,7 @@ components:
               type: string
               example: '21.127915'
               description: |
-                Access Point longitude to 6 decimal places.
+                Access Point longitude to 6 decimal places. An error will be thrown if value is zero for both latitude and longitude.
 
                 E.g. `21.127915`
               pattern: '[+-]?\\d*\\.?\\d+'''
