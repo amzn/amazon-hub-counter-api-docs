@@ -50,9 +50,11 @@ info:
 
 
     ### Submitting Client IDs to Amazon
-    If the partner is located in North America or Europe, they should submit their Client ID to Partner Central as soon as possible.
+    If the Partner is located in North America or Europe, they should submit their Client ID to Partner Central as soon as possible.
 
     If the Partner is located in Asia Pacific, Australia or Mexico, they should submit the Client ID to their Amazon representative as soon as possible.
+
+    In case of 3P Partners in any marketplace, they should submit the Client ID to their Amazon representative as soon as possible.
     
     This will allow Amazon to enable the Client ID which will, in turn, allow the partner to access the Access Point Onboarding API and progress to the next step.
 
@@ -1303,12 +1305,18 @@ components:
           type: string
           example: 'Client authentication failed'
 
-    FeedsRequest:
-      type: array
-      description: 'List of partner Access Points to be processed.'
-      items:
-        $ref: '#/components/schemas/AccessPoint'
 
+  
+
+    FeedsRequest:
+      type: object
+      description: 'Feed containing list of Access Aoints to be processed.'
+      properties: 
+        accessPoints: 
+          type: array
+          description: 'List of partner Access Points to be processed.'
+          items:
+            $ref: '#/components/schemas/AccessPoint'
     FeedsResponse:
       type: object
       properties:
