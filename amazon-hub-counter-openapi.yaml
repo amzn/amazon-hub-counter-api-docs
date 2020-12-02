@@ -146,7 +146,898 @@ info:
 
     #### How do I get a list of the Access Points I have submitted?
     This is not possible currently via the API. Upon request, we can generate a csv file with the list of your stores in the production environment.
+  version: '1.0.0'
+servers:
+  - url: https://accesspoints-api-sandbox-na.amazon.com/v1
+    description: 'NA staging server for testing'
+  - url: https://accesspoints-api-na.amazon.com/v1
+    description: 'NA production server'
+  - url: https://accesspoints-api-sandbox-eu.amazon.com/v1
+    description: 'EU staging server for testing'
+  - url: https://accesspoints-api-eu.amazon.com/v1
+    description: 'EU production server'
+  - url: https://accesspoints-api-sandbox-fe.amazon.com/v1
+    description: 'FE staging server for testing'
+  - url: https://accesspoints-api-fe.amazon.com/v1
+    description: 'FE production server'
+paths:
+  /token:
+    servers: [{
+      "url": "https://api.amazon.com/auth/o2"
+    }]
+    post:
+      summary: 'Return an access token'
+      description: |
+        Once Client ID has been whitelisted by Amazon, please request a Login with Amazon access token to access the API.
 
+        ### Access Token Expiration
+        Access tokens expire after 1 hour. If token expires, create a new token to use in all future requests. 
+        
+        Attempted access to the API with an expired token will give 403 HTTP errors (forbidden).
+      requestBody:
+        description: Partner credentials need to be set in the request body.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessTokenRequest'
+
+      responses:
+        '200':
+          description: 'Return a valid access token.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenResponse'
+        '401':
+          description: 'Authentication failed.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenResponseError'
+
+  /feeds:
+    post:
+      summary: 'Create a feed'
+      description: 'Creates a feed containing information for a list Access Points to be created or updated which is always processed asynchronously.'
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: header
+          name: 'Content-Type'
+          description: |
+            `Content-Type` header is required for this method and must be `application/json`. 
+          schema:
+            type: string
+            default: 'application/json'
+          required: true
+        - in: header
+          name: 'Content-Length'
+          description: |
+            `Content-Length` header is required for this method and ***must*** match the size of the body on the payload.
+            > **NOTE**: Sending an incorrect value will make the request fail.
+          schema:
+            type: int
+          required: true
+        - in: query
+          name: feedType
+          description: |
+            Specifies the type of feed to be submitted.
+            * For Amazon Hub Counter access points use the value `STORE_FEED`.
+            * For third party pick-up points use the value `3P`.
+          schema:
+            type: string
+            example: STORE_FEED
+            enum: [STORE_FEED, 3P]
+          required: true
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedsRequest'
+      responses:
+        '201':
+          description: 'Feed created.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feedId:
+                    type: string
+                    example: '0fbee22e-e455-44d5-9a5d-14fd1a312578'
+        '403':
+          description: 'Unauthorized. Invalid or expired access_token.'
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/AuthError'
+
+    get:
+      summary: 'Return a list of feeds'
+      description: | 
+        Returns a list of bulk Access Points update promises called feeds. This resource supports pagination via the optional parameters _pageSize_ and _nextOffset_. 
+        
+        The feeds are processed asynchronously - when the _status_ of the feed is set to **Completed**, processing of the feed has finished. 
+        
+        Query the resource to check the processing results _v1/feeds/{feedId}/documents/{outputDocumentId}_ with the corresponding _feedId_ and _outputDocumentId_ of the feed.
+      security:
+        - BearerAuth: []
+      parameters: 
+        - in: query
+          name: pageSize
+          description: 'Optional. The maximum amount of feeds to receive per request, the default value is 50.'
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+          required: false
+        - in: query
+          name: nextOffset
+          example: '07ad3e76-a9f7-4222-8586-3d142048cd43:40349'
+          description: 'Optional. Returns latest feeds as per page size value if not set. If provided, results received start from nextOffset value.'
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+            description: 'Feed list.'
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    nextOffset:
+                      type: string
+                      example: '07ad3e76-a9f7-4222-8586-3d142048cd43:40349'
+                      description: 'Token for pagination, use this in the query string to access next page.'
+                      nullable: true
+                    records:
+                      type: array
+                      description: An array containing latest uploaded feeds.
+                      items: 
+                        $ref: '#/components/schemas/FeedsResponse'
+        '403':
+            description: 'Unauthorized. Invalid or expired access_token.'
+            content:
+              application/json:
+                schema: 
+                  $ref: '#/components/schemas/AuthError'
+
+  /feeds/{feedId}:
+    get:
+      summary: 'Return a feed'
+      description: 'Returns a specific feed.'
+      security:
+        - BearerAuth: []
+      parameters: 
+        - in: path
+          name: feedId
+          description: 'FeedId of the requested feed.'
+          schema: 
+            type: string
+            example: '0fbee22e-e455-44d5-9a5d-14fd1a312578'
+          required: true
+      responses:
+        '200':
+          description: 'Returns feed information.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedsResponse'
+        '403':
+          description: 'Unauthorized. Invalid or expired access_token.'
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: 'Feed not found.'
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/NotFoundError'
+
+  /feeds/{feedId}/documents/{documentId}:
+    get:
+      summary: 'Return a document'
+      description: |
+        This method returns a specific document, the requested document can be an InputDocument or OutputDocument.
+
+        * If the documentId corresponds to an OutputDocument, results of feed processing received.
+        * If the documentId corresponds to an InputDocument, payload will be exactly the same as submitted.
+      security:
+        - BearerAuth: []
+      parameters: 
+        - in: path
+          name: feedId
+          description: 'FeedId of the feed that originated this document.'
+          example: '0fbee22e-e455-44d5-9a5d-14fd1a312578'
+          schema: 
+            type: string
+          required: true
+        - in: path
+          name: documentId
+          example: 'amzn1.tortuga.3.a74d493a-0767-4620-902f-3f05dd8cfc02.T2P91TLO6KF345'
+          description: 'DocumentId of the requested document.'
+          schema: 
+            type: string
+          required: true
+      responses:
+        '200':
+          description: 'Return feed information.'
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/OutputDocument'
+                  - $ref: '#/components/schemas/FeedsRequest'
+        '403':
+          description: 'Unauthorized. Invalid or expired access_token.'
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: 'Document not found.'
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/NotFoundError'
+components:
+  securitySchemes:
+    BearerAuth:
+      description: |
+        All API endpoints, except for the https://api.amazon.com/auth/o2/token, must be authenticated with a Bearer token.
+        
+        This is used to authenticate all API requests and needs to be set in the ```Authorization``` HTTP header example: 
+        
+        ```Authorization: Bearer "Atc|MQEWYJxEnP3I1ND03ZzbY...REDACTED```.
+      type: http
+      scheme: bearer
+  schemas:
+    AccessPoint:
+      type: object
+      properties:
+        accessPointId:
+          type: string
+          example: 'ACM-0045'
+          description: |
+            Unique identifier for a single Access Point. The same location must be always identified by the same accessPointId. accessPointId cannot be changed for an already created location. Also, it is not possible to upload the same active location twice with two different accessPointIds.
+
+            Please use the following format:
+            Three capital letter prefix identifying the company followed by a hyphen and internal store ID (if exists).
+
+            If internal IDs not already in use, please assign a four digit number to each of the stores for the format to follow.
+
+            E.g. For Acme store 45: `ACM-0045`
+
+            Using this format for store IDs will make quality reporting with Amazon much more efficient as it is easier to identify individual stores.
+        accessPointName:
+          type: string
+          example: 'Amazon Hub Counter - Acme Manchester'
+          maximum: 50
+          description: |
+            Customer-facing business name for location, prepended by the fixed string `Amazon Hub Counter - `. 
+            
+            If location descriptor is used to differentiate store chains, add it after the store name. 
+            
+            For example: `Amazon Hub Counter - Acme Manchester`. 
+            
+            There is a 50-character limit for this field - therefore 29 characters available following `Amazon Hub Counter - ` to provide location business name and descriptor.
+
+            > **NOTE**: If this is a third party pick-up point the `Amazon Hub Counter - ` prefix does not apply.
+        loginClaim:
+          type: string
+          example: 'store123@companydomain.com or +447999999123'
+          maximum: 50
+          description: |
+            Unique email address or mobile phone accessible by store manager that will be associated with the store. Store manager will either create a new Amazon account or sign into Counter app using this loginClaim for the store. A logiClaim can only be mapped to one store at a time.
+
+            Email loginClaim must only be provided in RFC 5322 format and phone loginClaim must be provided in international format, preferably E164; beginning with + and country code. E.g. email: store123@companydomain.com, phone: +447999999123. Please note that loginClaim is case insensitive and email loginClaims such as abc@xyz.com will be treated same as ABC@xyz.com. Similarly, phone numbers such as +447999999123 and +44(7999)-999123 will be treated as same.
+       
+            loginClaim is honoured only for approved clients. For unapproved clients, the field is ignored even if sent in the feed. Please contact your Amazon Hub Representative to check if you are approved for using this field.
+
+            loginClaim is not mandatory for existing stores that were onboarded without loginClaims, but is mandatory for any new stores of approved clients and stores which are already associated to some loginClaims in Amazon systems.
+
+            Stores onboarded with loginClaim will receive location activation notification via either email or SMS depending upon the channel provided in communication details. Email takes precedence over SMS in case both are provided. In case no communication details are provided, notification will be sent to email or phone that was provided in the loginClaim field.
+
+            loginClaim is an updatable field for a store record as long as the input loginClaim has not been used for a store activation on Counter app. In other words, if a loginClaim X is mapped to store Y which was previously activated, then the loginClaim X cannot be used for any other store.
+
+            Once a partner maps a loginClaim to a store, no other client can use that same loginClaim to map to any of their stores. Thus, loginClaims are reserved within the Partner namespace. However, the same Partner is allowed to update the login claims for its planned stores as many times as required.
+
+            It is recommended to send loginClaims for all the stores in a single feed. To understand why, let us consider the following scenario: 
+            - Partner submits a feed to onboard store Y with loginClaim A and store Z with loginClaim B. 
+            - loginClaim A is mapped to store Y, while login claim B is mapped to store Z. 
+            - The Partner then sends a feed to update store Z with loginClaim A. Given both the stores are in the 'Planned' state and belong to same client, operation will succeed. 
+            - Since a loginClaim can be mapped only to one store at a time, loginClaim A will finally be mapped to store Z, whilst loginClaim B will be removed from the system, leaving store Y abandoned. 
+            To mitigate this risk, clients are advised to send loginClaims for all the stores in a single feed.
+
+            > **NOTE**: The field is not applicable for third party pickup points.  
+        
+        isActive:
+          type: boolean
+          example: true
+          description: | 
+           True or false value. Status of the Access Point. Active location will be processed by Amazon for activation. Inactive location will be instantly removed from Amazon website. This property will be used to deactivate or activate stores already in Counter estate.
+
+            E.g. `true`
+        isRestrictedAccess:
+          type: boolean
+          example: false
+          description: |
+            True or false value. Indicates that Access Point is in restricted area inaccessible to the public. Message will be displayed on the Amazon website indicating that customer will require authorization for access. This is set to false by default.
+
+            E.g. `true`
+        timeZone:
+          type: string
+          example: America/Los_Angeles
+          description: |
+            The Access Point time zone.
+            See Appendix II for format details.
+
+            E.g. `Europe/London`
+        capacity:
+          type: object
+          properties:
+            threshold:
+              type: integer
+              description: 'Maximum number of packages that can be stored at the Access Point location. If the value is not present the threshold will be set by default to 20 packages. Minimum supported value is 5 packages.'
+              minimum: 5
+          required:
+            - threshold
+        communicationDetails:
+          type: object
+          description: |
+            Access Point contact details - mandatory for Amazon Hub Counter locations which are not using loginClaim field as store registration email is sent to the *emailId* specified here.
+
+            This field is optional for stores onboarded with loginClaim, who will receive location activation notification via either email or SMS depending upon the channel provided in communication details. Email takes precedence over SMS in case both are provided. In case no communication details are provided, notification will be sent on email or phone that was provided in the login claim field.
+
+            > **NOTE**: This field is not mandatory for third party pick-up points.
+          properties:
+            phoneNumber:
+              type: string
+              example: '+44 7999 999123'
+              pattern: '^[+]?([0-9]*[\\.\\s\\-\\(\\)]|[0-9]+){3,24}$'
+              description: |
+                Access Point phone number, beginning with country code.
+
+                E.g. `+44 7999 999123`
+            emailId:
+              type: string
+              example: 'store123@companydomain.com'
+              pattern: "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+              description: |
+                Access Point email address used by Amazon to contact the location and initiate onboarding process.
+
+                E.g. `store123@companydomain.com`
+            faxPhone:
+              type: string
+              example: '+44 7999 999123'
+              description: |
+                Access Point fax phone number, beginning with country code.
+
+                E.g. `+44 7999 999123`
+          required:
+            - phoneNumber
+            - emailId
+        terminationDate:
+          type: string
+          example: '2199-12-31'
+          pattern: '^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$'
+          description: |
+            Access Point termination date in the format YYYY-MM-DD. Can be used to notify Amazon of an upcoming location termination.
+
+            E.g. `2199-12-31`
+        capabilities:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            example: 'PICK_UP'
+            enum: [PICK_UP, DROP_OFF]
+          description: |
+            Access Point supported capabilities: PICK_UP for deliveries and DROP_OFF for c-returns.
+
+            E.g. `["PICK_UP", "DROP_OFF"]`
+        address:
+          type: object
+          properties:
+            addressFieldOne:
+              type: string
+              example: '123 Fellowman Road'
+              maximum: 180
+              description: |
+                Street address:
+                
+                E.g. `123 Fellowman Road`
+
+                Or building name:
+                
+                E.g. `Unit 2, Busby Building`
+
+                > **NOTE**: This field has a 180-character limit.
+            addressFieldTwo:
+              type: string
+              example: 'Hale'
+              maximum: 60
+              description: |
+                Street Address 
+                (if addressFieldOne = Building Name)
+                Only put Street Address in this property if there is a building name in the first address property.
+
+                E.g. `123 Fellowman Road`
+
+                Or additional line for Access point address 
+                (if addressFieldOne = Street Address)
+                Can be a relevant village or town if there is a street address in the first address property.
+                
+                E.g. `Hale`
+
+                > **NOTE**: This field has a 60-character limit.
+            addressFieldThree:
+              type: string
+              example: 'Altrincham'
+              maximum: 60
+              description: |
+                Additional line for the Access Point address.
+                Can be a relevant village or town.
+                
+
+                E.g. `Altrincham`
+
+                > **NOTE**: This field has a 60-character limit.
+            city:
+              type: string
+              example: 'Manchester'
+              description: |
+                City where Access Point is located.
+
+                E.g. `Manchester`
+            region:
+              type: string
+              example: null
+              description: |
+                Region where Access Point is located.
+
+                * Equivalent to state in the US.
+                * Leave blank for UK. 
+                * Equivalent to prefecture for JP.
+            district:
+              type: string
+              example: Greater Manchester
+              description: |
+                District/county where Access Point is located.
+
+                E.g. `Greater Manchester`
+            postalCode:
+              type: string
+              example: WA34 9PS
+              description: |
+                Access Point postal code. 
+
+                * For UK, include a space between the 2 halves of the postcode.
+
+                E.g. `WA34 9PS`
+            countryCode:
+              type: string
+              example: 'GB'
+              description: |
+                Access Point country code.
+
+                E.g. `GB`
+            latitude:
+              type: string
+              example: '79.290182'
+              description: |
+                Access Point latitude to 6 decimal places. An error will be thrown if value is zero for both latitude and longitude.
+
+                E.g. `79.290182`
+              pattern: '[+-]?\\d*\\.?\\d+'
+            longitude:
+              type: string
+              example: '21.127915'
+              description: |
+                Access Point longitude to 6 decimal places. An error will be thrown if value is zero for both latitude and longitude.
+
+                E.g. `21.127915`
+              pattern: '[+-]?\\d*\\.?\\d+'''
+          required:
+            - addressFieldOne
+            - city
+            - countryCode
+            - postalCode
+            - latitude
+            - longitude
+        standardHours:
+          type: array
+          description: 'Array containing location standard opening hours.'
+          minItems: 1
+          items:
+            type: object
+            properties:
+              day:
+                type: string
+                example: 'MONDAY'
+                description: |
+                  Day of the week for opening hours’ entry.
+
+                  E.g. `MONDAY`
+                enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+              openingTime:
+                type: string
+                example: '08:00:00'
+                description: |
+                  Access Point opening time in the format HH:MM:SS
+
+                  E.g. `08:00:00`
+
+                  * If store is 24 hours, please set it to `00:00:00`
+                pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
+              closingTime:
+                type: string
+                example: '22:00:00'
+                description: |
+                  Access Point closing time in the format HH:MM:SS
+
+                  E.g. `22:00:00`
+
+                  * If store is 24 hours, please set it to `23:59:59`
+                pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
+              midDayClosures:
+                type: array
+                description: 'Array for midday closures during any operating day.'
+                minItems: 1
+                items:
+                  $ref: '#/components/schemas/MidDayClosure'
+            required:
+              - day
+              - openingTime
+              - closingTime
+        exceptionalClosures:
+          type: array
+          description: 'List with exceptional closures for Access Point. Minimum unit of exceptional closure is one day.'
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ExceptionalClosure'
+      required:
+        - accessPointId
+        - accessPointName
+        - isActive
+        - timeZone
+        - address
+        - standardHours
+        - capabilities 
+
+    AccessTokenRequest:
+      type: object
+      properties:
+        client_id: 
+          type: string
+          example: 'amzn1.application-oa2-client.5f4deb235c3....REDACTED'
+          description: 'Client ID received as part of security profile.'
+        client_secret: 
+          type: string
+          example: '4244a2183d4c67aa66f15b4923f4496a5e14a1a326c96c5606715505dfbc7544'
+          description: 'Client secret received as part of security profile.'
+        grant_type: 
+          type: string
+          default: client_credentials
+        scope: 
+          type: string
+          default: accesspoints::accesspoint:readwrite
+
+    AccessTokenResponse:
+      type: object
+      properties:
+        access_token: 
+          type: string
+          example: 'Atc|MQEWYJxEnP3I1ND03ZzbY...REDACTED'
+          description: 'Bearer token - authenticates API requests.'
+        expires_in: 
+          type: integer
+          description: 'Expiration time in seconds since issue of token.'
+          default: 3600
+        scope: 
+          type: string
+          description: 'Scope relevant to this token.'
+          default: 'accesspoints::accesspoint:readwrite'
+        token_type: 
+          type: string
+          description: 'Access token type.'
+          default: 'Bearer'
+
+    AccessTokenResponseError:
+      type: object
+      properties:
+        error: 
+          type: string
+          example: 'invalid_client'
+        error_description: 
+          type: string
+          example: 'Client authentication failed'
+
+
+  
+
+    FeedsRequest:
+      type: object
+      description: 'Feed containing list of Access Aoints to be processed.'
+      properties: 
+        accessPoints: 
+          type: array
+          description: 'List of partner Access Points to be processed.'
+          items:
+            $ref: '#/components/schemas/AccessPoint'
+    FeedsResponse:
+      type: object
+      properties:
+        feedId: 
+          type: string
+          example: '0fbee22e-e455-44d5-9a5d-14fd1a345055'
+          description: 'Unique identifier representing request.'
+        clientId: 
+          type: string
+          example: 'Atc|MQEWYJxEnP3I1ND03ZzbY...REDACTED'
+          description: ClientId received as part of security profile.
+        sequenceNumber: 
+          type: integer
+          example: 160
+          description: 'Incremental number assigned to the feed.'
+        status: 
+          type: string
+          example: 'Completed'
+          enum: [Processing, Failed, Completed]
+          description: '**Processing** corresponds to a feed that is still being processed, **Completed** to feeds fully processed and **Failed** if the feed processing failed. * **Failed:** This error code will be given as part of failure which can
+          not be recovered. For instance, data configured in downstream service is not correct. No Output document will be generated in such scenarios. * **Processing:** The Input Document is still in process. * **Completed:** The Input Document processing is completed and the corresponding Output Document is generated.'
+        inputDocuments: 
+            type: array
+            description: 'Input Document list.' 
+            items:
+              $ref: '#/components/schemas/Document'
+        outputDocuments:
+            type: array
+            description: 'Output Document list.'
+            items:
+              $ref: '#/components/schemas/Document'
+        createDate: 
+          type: integer
+          example: 1572273619584
+          description: 'Epoch time of feed submission.'
+
+    MidDayClosure:
+      type: object
+      properties:
+        startTime:
+          type: string
+          example: '14:00:00'
+          description: |
+            Midday closure closing time (if any) in the format `HH:MM:SS`.
+
+            E.g. `14:00:00`
+          pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
+        endTime:
+          type: string
+          example: '15:00:00'
+          description: |
+            Midday closure opening time (if any) in the format `HH:MM:SS`.
+
+            E.g. `15:00:00`
+          pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
+      required:
+        - startTime
+        - endTime
+
+    ExceptionalClosure:
+      type: object
+      properties:
+        startDateTime:
+          type: string
+          example: '2018-06-30'
+          description: |
+            Exceptional closure start date in the format `YYYY-MM-DD`
+
+            E.g. `2018-06-30`
+          pattern: '^(20[1-9][0-9])-(0[0-9]|1[0-2])-(0[1-9]|([12][0-9]|3[01]))(T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?$'
+        endDateTime:
+          type: string
+          example: '2018-07-10'
+          description: |
+            Exceptional closure end date in the format `YYYY-MM-DD`
+
+            E.g. `2018-07-10`
+          pattern: '^(20[1-9][0-9])-(0[0-9]|1[0-2])-(0[1-9]|([12][0-9]|3[01]))(T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?$'
+      required:
+        - startDateTime
+        - endDateTime
+
+    AuthError:
+      type: object
+      properties:
+        message: 
+          type: string
+          example: 'Unexpected Authorization token format'
+        retryable: 
+          type: boolean
+          example: false
+
+    NotFoundError:
+      type: object
+      properties:
+        message: 
+          type: string
+          example: 'Requested resource does not exist'
+        retryable: 
+          type: boolean
+          example: false
+
+    ProcessingError:
+      type: object
+      properties:
+        errorCode:
+          type: string
+          example: 'INVALID_ISACTIVE_FLAG_STATE'
+          enum:
+            - INVALID_ACCESS_POINT_ID
+            - INVALID_ACCESS_POINT_NAME
+            - INVALID_ACTIVE_FLAG
+            - INVALID_TIMEZONE
+            - INVALID_TERMINATION_DATE
+            - INVALID_CAPABILITIES
+            - INVALID_ADDRESS
+            - INVALID_STANDARD_HOURS
+            - INVALID_EXCEPTION_CLOSURES
+            - INVALID_CAPACITY
+            - INVALID_DAY
+            - INVALID_OPENING_TIME
+            - INVALID_CLOSING_TIME
+            - INVALID_START_TIME
+            - INVALID_END_TIME
+            - INVALID_START_DATE_TIME
+            - INVALID_END_DATE_TIME
+            - INVALID_MID_DAY_CLOSURES
+            - INVALID_COMMUNICATION_DETAILS
+            - INVALID_EMAIL_ID
+            - INVALID_PHONE_NUMBER
+            - INVALID_COUNTRY_CODE
+            - INVALID_LATITUDE
+            - INVALID_LONGITUDE
+            - INVALID_CITY
+            - INVALID_ADDRESS_FIELD_ONE
+            - DUPLICATE_STORE_ENTRY
+            - INVALID_ISACTIVE_FLAG_STATE
+            - INVALID_STORE_STATE
+            - STORE_CREATION_FAILURE
+            - STORE_UPDATION_FAILURE
+            - UNABLE_TO_UPDATE_STORE_STATUS
+            - UNABLE_TO_UPDATE_STORE_CAPABILITY
+            - UNABLE_TO_UPDATE_STORE_CAPABILITY_STATUS
+            - UNABLE_TO_UPDATE_CAPACITY
+            - UNABLE_TO_UPDATE_CLIENT_REF
+            - DUPLICATE_LOGIN_CLAIM_ENTRY 
+            - INVALID_LOGIN_CLAIM
+            - MISSING_LOGIN_CLAIM
+            - LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE
+            - UNABLE_TO_PROCESS_LOGIN_CLAIM
+
+          description: |
+            A unique error code to identify the problem. The value will only be present in case of failure.
+            * `INVALID_ACCESS_POINT_ID` - Access point Id is not valid or missing. Sample error message: [INVALID_ACCESS_POINT_ID] required key [accessPointId] not found.
+            * `INVALID_ACCESS_POINT_NAME` - Access point name is not valid or missing. Sample error message: [INVALID_ACCESS_POINT_NAME] required key [accessPointName] not found.
+            * `INVALID_ACTIVE_FLAG` - isActive Flag is not valid or missing. For example sample error message will be: [INVALID_ACTIVE_FLAG] required key [isActive] not found.
+            * `INVALID_TIMEZONE` - TimeZone is not valid or missing. For example sample error message will be: [INVALID_TIMEZONE] TimeZone is not valid.
+            * `INVALID_TERMINATION_DATE` - Termination is not valid or missing.
+            * `INVALID_CAPABILITIES` - Capabilities are not valid or missing.
+            * `INVALID_ADDRESS` - Invalid address. NOTE: Two letter country code is required, address cannot be duplicated.
+            * `INVALID_STANDARD_HOURS` - Standard hours for an access point should be as per schema. If not, this error code will be returned. **NOTE**: Opening hours must be earlier than Closing hours.
+            * `INVALID_EXCEPTION_CLOSURES` - Exceptional closures override standard hours. Format of these should be as per the schema. **NOTE**: Initial date must be earlier than final date.
+            * `INVALID_CAPACITY` - This exception code describes one of the following scenario. 1. Threshold Key is absent in the capacity object. [E.g. Error Message: [INVALID_CAPACITY_THRESHOLD] required key [threshold] not found]. 2. Threshold Key value is less than five. [E.g. error messages: [INVALID_CAPACITY_THRESHOLD] <x> is not higher than or equal to five]
+            * `INVALID_DAY` - Invalid day format.
+            * `INVALID_OPENING_TIME` - Invalid time format. Please check schema for allowed format.
+            * `INVALID_CLOSING_TIME`
+            * `INVALID_START_TIME`
+            * `INVALID_END_TIME`
+            * `INVALID_START_DATE_TIME`
+            * `INVALID_END_DATE_TIME`
+            * `INVALID_MID_DAY_CLOSURES` - MidDay closures should be as per the schema, otherwise this error code will be returned. Opening and closing time should be such that opening time is before closing time.
+            * `INVALID_COMMUNICATION_DETAILS` - Returned in case schema is not followed for a given input.
+            * `INVALID_EMAIL_ID`
+            * `INVALID_PHONE_NUMBER`
+            * `INVALID_COUNTRY_CODE`
+            * `INVALID_LATITUDE`
+            * `INVALID_LONGITUDE`
+            * `INVALID_CITY`
+            * `INVALID_ADDRESS_FIELD_ONE`
+            * `DUPLICATE_STORE_ENTRY` - A given access point entry is duplicated based on its id. Sample error message: [DUPLICATE_STORE_ENTRY] This is a duplicate store entry, index occurrences are: [1, 2]
+            * `INVALID_ISACTIVE_FLAG_STATE` - isActive flag value has not expected value. For example, to create an access point isActive flag value has to be true. Sample error message: [INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.
+            * `INVALID_STORE_STATE` - This error code indicates that store is not in a valid state to perform certain operation. For example, a store cannot be marked as active or inactive if it exists in planned state. Sample error message: [INVALID_STORE_STATE] Store is in planned state, cannot be updated to active or inactive state.
+            * `STORE_CREATION_FAILURE` - Failure in Amazon services, please report this error to Amazon and retry.
+            * `STORE_UPDATION_FAILURE`
+            * `UNABLE_TO_UPDATE_STORE_STATUS`
+            * `UNABLE_TO_UPDATE_STORE_CAPABILITY`
+            * `UNABLE_TO_UPDATE_STORE_CAPABILITY_STATUS`
+            * `UNABLE_TO_UPDATE_CAPACITY`
+            * `UNABLE_TO_UPDATE_CLIENT_REF` - This error indicates that given accessPointId is not updated for a given store. Sample message will be: [UNABLE_TO_UPDATE_CLIENT_REF] Unable to update accessPointId for created store accessPointId1
+            * `DUPLICATE_LOGIN_CLAIM_ENTRY` - This error code indicates that a given login claim entry is duplicated based on its value. Sample error message: [DUPLICATE_LOGIN_CLAIM_ENTRY] This is a duplicate login claim entry, index occurrences are: [1, 2]
+            * `INVALID_LOGIN_CLAIM` - This error code indicates that given login claim does not adhere to a valid email in RFC 5322 format or valid phone number in E164 format. Sample error message: [INVALID_LOGIN_CLAIM] Login claim is not valid. Phone number should be in international or E164 format and email in RFC 5322 format
+            * `MISSING_LOGIN_CLAIM` - This error code is applicable for clients approved for login claim flow. It indicates that either the login claim was not provided while onboarding a new store or login claim was not provided for an existing store already associated with some login claim. Sample error message: [MISSING_LOGIN_CLAIM] This is a required field when onboarding a new store or when updating the store already associated with a login claim.
+            * `LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE` - This error code indicates the login claim cannot be used for current store as it is already being used for a different store, please use a different login claim to register. Sample error message: [LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE] There is already a store associated with this login claim. Please use a different login claim to register.
+            * `UNABLE_TO_PROCESS_LOGIN_CLAIM` - This error code indicates the login claim was not processed successfully due to failure in Amazon services, please report it to Amazon and retry. Sample error message: [UNABLE_TO_PROCESS_LOGIN_CLAIM] There was an error processing the login claim. Please try again or contact Amazon Hub Representative if error persists.
+        errorMessage:
+          type: string
+          example: '[INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.'
+          description: 'The error message in user-friendly format.'    
+
+    Document:
+      type: object
+      properties:
+        documentId: 
+          type: string
+          example: 'amzn1.tortuga.3.a74d493a-0767-4620-902f-3f05dd8cfc02.T2P91TLO6KF549'
+          description: 'Unique id representing the document.'
+        documentType: 
+          type: string
+          example: 'OutputDocument'
+          enum: [InputDocument, OutputDocument]
+          description: 'Document type.'
+
+    OutputDocument:
+      type: object
+      description: 'Holds processing details for submitted feed.'
+      properties:
+        feedId:
+          description: 'Corresponds to feed submission feedId.'
+          example: '0fbee22e-e455-44d5-9a5d-14fd1a345055'
+          type: string
+        noOfAccessPointsProcessed:
+          description: 'Total number of Access Points being processed.'
+          example: 2
+          type: integer
+        noOfAccessPointsSuccessfullyProcessed:
+          description: 'Total number of Access Points successfully updated for the feed submitted.'
+          example: 1
+          type: integer
+        noOfAccessPointsFailedToProcess:
+          example: 1
+          description: 'Total number of Access Points unable to process due to errors.'
+          type: integer
+        failedAccessPointProcessingDetails:
+          type: array
+          description: Detailed list of errors for this feed.
+          items:
+            type: object
+            properties:
+              indexNumber:
+                description: 'Corresponds to index of entry in Input feed.'
+                example: 1
+                type: integer
+              accesspointId: 
+                description: 'Unique Id for the Access Point provided at time of feed submission.'
+                example: 'ACM-0045'
+                type: string
+              resultStatus:
+                description: 'Enum property which dictates the success, failure and warning cases.'
+                example: 'FAILURE'
+                type: string
+                enum: [SUCCESS, WARNING, FAILURE]
+              errors:
+                type: array
+                description: 'List of processing errors and their description.'
+                items:
+                  $ref: '#/components/schemas/ProcessingError'
+            required:
+              - indexNumber
+              - accesspointId
+              - resultStatus
+      required:
+        - feedId
+        - noOfAccessPointsProcessed
+        - noOfAccessPointsSuccessfullyProcessed
+        - noOfAccessPointsFailedToProcess
+appendices:
+  title: 'Amazon Hub Counter API'
+  description: |
     # Appendices
 
     ## APPENDIX I - API HTTP response status codes
@@ -722,852 +1613,47 @@ info:
     | +13:00  |    Pacific/Tongatapu |
     | +14:00  |    Etc/GMT-14 |
     | +14:00  |    Pacific/Kiritimati |
-
-  version: '1.0.0'
-servers:
-  - url: https://accesspoints-api-sandbox-na.amazon.com/v1
-    description: 'NA staging server for testing'
-  - url: https://accesspoints-api-na.amazon.com/v1
-    description: 'NA production server'
-  - url: https://accesspoints-api-sandbox-eu.amazon.com/v1
-    description: 'EU staging server for testing'
-  - url: https://accesspoints-api-eu.amazon.com/v1
-    description: 'EU production server'
-  - url: https://accesspoints-api-sandbox-fe.amazon.com/v1
-    description: 'FE staging server for testing'
-  - url: https://accesspoints-api-fe.amazon.com/v1
-    description: 'FE production server'
-paths:
-  /token:
-    servers: [{
-      "url": "https://api.amazon.com/auth/o2"
-    }]
-    post:
-      summary: 'Return an access token'
-      description: |
-        Once Client ID has been whitelisted by Amazon, please request a Login with Amazon access token to access the API.
-
-        ### Access Token Expiration
-        Access tokens expire after 1 hour. If token expires, create a new token to use in all future requests. 
-        
-        Attempted access to the API with an expired token will give 403 HTTP errors (forbidden).
-      requestBody:
-        description: Partner credentials need to be set in the request body.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AccessTokenRequest'
-
-      responses:
-        '200':
-          description: 'Return a valid access token.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccessTokenResponse'
-        '401':
-          description: 'Authentication failed.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccessTokenResponseError'
-
-  /feeds:
-    post:
-      summary: 'Create a feed'
-      description: 'Creates a feed containing information for a list Access Points to be created or updated which is always processed asynchronously.'
-      security:
-        - BearerAuth: []
-      parameters:
-        - in: header
-          name: 'Content-Type'
-          description: |
-            `Content-Type` header is required for this method and must be `application/json`. 
-          schema:
-            type: string
-            default: 'application/json'
-          required: true
-        - in: header
-          name: 'Content-Length'
-          description: |
-            `Content-Length` header is required for this method and ***must*** match the size of the body on the payload.
-            > **NOTE**: Sending an incorrect value will make the request fail.
-          schema:
-            type: int
-          required: true
-        - in: query
-          name: feedType
-          description: |
-            Specifies the type of feed to be submitted.
-            * For Amazon Hub Counter access points use the value `STORE_FEED`.
-            * For third party pick-up points use the value `3P`.
-          schema:
-            type: string
-            example: STORE_FEED
-            enum: [STORE_FEED, 3P]
-          required: true
-      requestBody:
-        required: true
-        content: 
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FeedsRequest'
-      responses:
-        '201':
-          description: 'Feed created.'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  feedId:
-                    type: string
-                    example: '0fbee22e-e455-44d5-9a5d-14fd1a312578'
-        '403':
-          description: 'Unauthorized. Invalid or expired access_token.'
-          content:
-            application/json:
-              schema: 
-                $ref: '#/components/schemas/AuthError'
-
-    get:
-      summary: 'Return a list of feeds'
-      description: | 
-        Returns a list of bulk Access Points update promises called feeds. This resource supports pagination via the optional parameters _pageSize_ and _nextOffset_. 
-        
-        The feeds are processed asynchronously - when the _status_ of the feed is set to **Completed**, processing of the feed has finished. 
-        
-        Query the resource to check the processing results _v1/feeds/{feedId}/documents/{outputDocumentId}_ with the corresponding _feedId_ and _outputDocumentId_ of the feed.
-      security:
-        - BearerAuth: []
-      parameters: 
-        - in: query
-          name: pageSize
-          description: 'Optional. The maximum amount of feeds to receive per request, the default value is 50.'
-          schema:
-            type: integer
-            default: 50
-            maximum: 100
-          required: false
-        - in: query
-          name: nextOffset
-          example: '07ad3e76-a9f7-4222-8586-3d142048cd43:40349'
-          description: 'Optional. Returns latest feeds as per page size value if not set. If provided, results received start from nextOffset value.'
-          schema:
-            type: string
-          required: false
-      responses:
-        '200':
-            description: 'Feed list.'
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    nextOffset:
-                      type: string
-                      example: '07ad3e76-a9f7-4222-8586-3d142048cd43:40349'
-                      description: 'Token for pagination, use this in the query string to access next page.'
-                      nullable: true
-                    records:
-                      type: array
-                      description: An array containing latest uploaded feeds.
-                      items: 
-                        $ref: '#/components/schemas/FeedsResponse'
-        '403':
-            description: 'Unauthorized. Invalid or expired access_token.'
-            content:
-              application/json:
-                schema: 
-                  $ref: '#/components/schemas/AuthError'
-
-  /feeds/{feedId}:
-    get:
-      summary: 'Return a feed'
-      description: 'Returns a specific feed.'
-      security:
-        - BearerAuth: []
-      parameters: 
-        - in: path
-          name: feedId
-          description: 'FeedId of the requested feed.'
-          schema: 
-            type: string
-            example: '0fbee22e-e455-44d5-9a5d-14fd1a312578'
-          required: true
-      responses:
-        '200':
-          description: 'Returns feed information.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FeedsResponse'
-        '403':
-          description: 'Unauthorized. Invalid or expired access_token.'
-          content:
-            application/json:
-              schema: 
-                $ref: '#/components/schemas/AuthError'
-        '404':
-          description: 'Feed not found.'
-          content:
-            application/json:
-              schema: 
-                $ref: '#/components/schemas/NotFoundError'
-
-  /feeds/{feedId}/documents/{documentId}:
-    get:
-      summary: 'Return a document'
-      description: |
-        This method returns a specific document, the requested document can be an InputDocument or OutputDocument.
-
-        * If the documentId corresponds to an OutputDocument, results of feed processing received.
-        * If the documentId corresponds to an InputDocument, payload will be exactly the same as submitted.
-      security:
-        - BearerAuth: []
-      parameters: 
-        - in: path
-          name: feedId
-          description: 'FeedId of the feed that originated this document.'
-          example: '0fbee22e-e455-44d5-9a5d-14fd1a312578'
-          schema: 
-            type: string
-          required: true
-        - in: path
-          name: documentId
-          example: 'amzn1.tortuga.3.a74d493a-0767-4620-902f-3f05dd8cfc02.T2P91TLO6KF345'
-          description: 'DocumentId of the requested document.'
-          schema: 
-            type: string
-          required: true
-      responses:
-        '200':
-          description: 'Return feed information.'
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/OutputDocument'
-                  - $ref: '#/components/schemas/FeedsRequest'
-        '403':
-          description: 'Unauthorized. Invalid or expired access_token.'
-          content:
-            application/json:
-              schema: 
-                $ref: '#/components/schemas/AuthError'
-        '404':
-          description: 'Document not found.'
-          content:
-            application/json:
-              schema: 
-                $ref: '#/components/schemas/NotFoundError'
-components:
-  securitySchemes:
-    BearerAuth:
-      description: |
-        All API endpoints, except for the https://api.amazon.com/auth/o2/token, must be authenticated with a Bearer token.
-        
-        This is used to authenticate all API requests and needs to be set in the ```Authorization``` HTTP header example: 
-        
-        ```Authorization: Bearer "Atc|MQEWYJxEnP3I1ND03ZzbY...REDACTED```.
-      type: http
-      scheme: bearer
-  schemas:
-    AccessPoint:
-      type: object
-      properties:
-        accessPointId:
-          type: string
-          example: 'ACM-0045'
-          description: |
-            Unique identifier for a single Access Point. The same location must be always identified by the same accessPointId. accessPointId cannot be changed for an already created location. Also, it is not possible to upload the same active location twice with two different accessPointIds.
-
-            Please use the following format:
-            Three capital letter prefix identifying the company followed by a hyphen and internal store ID (if exists).
-
-            If internal IDs not already in use, please assign a four digit number to each of the stores for the format to follow.
-
-            E.g. For Acme store 45: `ACM-0045`
-
-            Using this format for store IDs will make quality reporting with Amazon much more efficient as it is easier to identify individual stores.
-        accessPointName:
-          type: string
-          example: 'Amazon Hub Counter - Acme Manchester'
-          maximum: 50
-          description: |
-            Customer-facing business name for location, prepended by the fixed string `Amazon Hub Counter - `. 
-            
-            If location descriptor is used to differentiate store chains, add it after the store name. 
-            
-            For example: `Amazon Hub Counter - Acme Manchester`. 
-            
-            There is a 50-character limit for this field - therefore 29 characters available following `Amazon Hub Counter - ` to provide location business name and descriptor.
-
-            > **NOTE**: If this is a third party pick-up point the `Amazon Hub Counter - ` prefix does not apply.
-        isActive:
-          type: boolean
-          example: true
-          description: | 
-           True or false value. Status of the Access Point. Active location will be processed by Amazon for activation. Inactive location will be instantly removed from Amazon website. This property will be used to deactivate or activate stores already in Counter estate.
-
-            E.g. `true`
-        isRestrictedAccess:
-          type: boolean
-          example: false
-          description: |
-            True or false value. Indicates that Access Point is in restricted area inaccessible to the public. Message will be displayed on the Amazon website indicating that customer will require authorization for access. This is set to false by default.
-
-            E.g. `true`
-        timeZone:
-          type: string
-          example: America/Los_Angeles
-          description: |
-            The Access Point time zone.
-            See Appendix II for format details.
-
-            E.g. `Europe/London`
-        capacity:
-          type: object
-          properties:
-            threshold:
-              type: integer
-              description: 'Maximum number of packages that can be stored at the Access Point location. If the value is not present the threshold will be set by default to 20 packages. Minimum supported value is 5 packages.'
-              minimum: 5
-          required:
-            - threshold
-        communicationDetails:
-          type: object
-          description: |
-            Access Point contact details - mandatory for Amazon Hub Counter locations as store registration email is sent to the *emailId* specified here.
-
-            > **NOTE**: This field is not mandatory for third party pick-up points.
-          properties:
-            phoneNumber:
-              type: string
-              example: '+44 7999 999123'
-              pattern: '^[+]?([0-9]*[\\.\\s\\-\\(\\)]|[0-9]+){3,24}$'
-              description: |
-                Access Point phone number, beginning with country code.
-
-                E.g. `+44 7999 999123`
-            emailId:
-              type: string
-              example: 'store123@companydomain.com'
-              pattern: "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
-              description: |
-                Access Point email address used by Amazon to contact the location and initiate onboarding process.
-
-                E.g. `store123@companydomain.com`
-            faxPhone:
-              type: string
-              example: '+44 7999 999123'
-              description: |
-                Access Point fax phone number, beginning with country code.
-
-                E.g. `+44 7999 999123`
-          required:
-            - phoneNumber
-            - emailId
-        terminationDate:
-          type: string
-          example: '2199-12-31'
-          pattern: '^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$'
-          description: |
-            Access Point termination date in the format YYYY-MM-DD. Can be used to notify Amazon of an upcoming location termination.
-
-            E.g. `2199-12-31`
-        capabilities:
-          type: array
-          minItems: 1
-          items:
-            type: string
-            example: 'PICK_UP'
-            enum: [PICK_UP, DROP_OFF]
-          description: |
-            Access Point supported capabilities: PICK_UP for deliveries and DROP_OFF for c-returns.
-
-            E.g. `["PICK_UP", "DROP_OFF"]`
-        address:
-          type: object
-          properties:
-            addressFieldOne:
-              type: string
-              example: '123 Fellowman Road'
-              maximum: 180
-              description: |
-                Street address:
-                
-                E.g. `123 Fellowman Road`
-
-                Or building name:
-                
-                E.g. `Unit 2, Busby Building`
-
-                > **NOTE**: This field has a 180-character limit.
-            addressFieldTwo:
-              type: string
-              example: 'Hale'
-              maximum: 60
-              description: |
-                Street Address 
-                (if addressFieldOne = Building Name)
-                Only put Street Address in this property if there is a building name in the first address property.
-
-                E.g. `123 Fellowman Road`
-
-                Or additional line for Access point address 
-                (if addressFieldOne = Street Address)
-                Can be a relevant village or town if there is a street address in the first address property.
-                
-                E.g. `Hale`
-
-                > **NOTE**: This field has a 60-character limit.
-            addressFieldThree:
-              type: string
-              example: 'Altrincham'
-              maximum: 60
-              description: |
-                Additional line for the Access Point address.
-                Can be a relevant village or town.
-                
-
-                E.g. `Altrincham`
-
-                > **NOTE**: This field has a 60-character limit.
-            city:
-              type: string
-              example: 'Manchester'
-              description: |
-                City where Access Point is located.
-
-                E.g. `Manchester`
-            region:
-              type: string
-              example: null
-              description: |
-                Region where Access Point is located.
-
-                * Equivalent to state in the US.
-                * Leave blank for UK. 
-                * Equivalent to prefecture for JP.
-            district:
-              type: string
-              example: Greater Manchester
-              description: |
-                District/county where Access Point is located.
-
-                E.g. `Greater Manchester`
-            postalCode:
-              type: string
-              example: WA34 9PS
-              description: |
-                Access Point postal code. 
-
-                * For UK, include a space between the 2 halves of the postcode.
-
-                E.g. `WA34 9PS`
-            countryCode:
-              type: string
-              example: 'GB'
-              description: |
-                Access Point country code.
-
-                E.g. `GB`
-            latitude:
-              type: string
-              example: '79.290182'
-              description: |
-                Access Point latitude to 6 decimal places. An error will be thrown if value is zero for both latitude and longitude.
-
-                E.g. `79.290182`
-              pattern: '[+-]?\\d*\\.?\\d+'
-            longitude:
-              type: string
-              example: '21.127915'
-              description: |
-                Access Point longitude to 6 decimal places. An error will be thrown if value is zero for both latitude and longitude.
-
-                E.g. `21.127915`
-              pattern: '[+-]?\\d*\\.?\\d+'''
-          required:
-            - addressFieldOne
-            - city
-            - countryCode
-            - postalCode
-            - latitude
-            - longitude
-        standardHours:
-          type: array
-          description: 'Array containing location standard opening hours.'
-          minItems: 2
-          items:
-            type: object
-            properties:
-              day:
-                type: string
-                example: 'MONDAY'
-                description: |
-                  Day of the week for opening hours’ entry.
-
-                  E.g. `MONDAY`
-                enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
-              openingTime:
-                type: string
-                example: '08:00:00'
-                description: |
-                  Access Point opening time in the format HH:MM:SS
-
-                  E.g. `08:00:00`
-
-                  * If store is 24 hours, please set it to `00:00:00`
-                pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
-              closingTime:
-                type: string
-                example: '22:00:00'
-                description: |
-                  Access Point closing time in the format HH:MM:SS
-
-                  E.g. `22:00:00`
-
-                  * If store is 24 hours, please set it to `23:59:59`
-                pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
-              midDayClosures:
-                type: array
-                description: 'Array for midday closures during any operating day.'
-                minItems: 1
-                items:
-                  $ref: '#/components/schemas/MidDayClosure'
-            required:
-              - day
-              - openingTime
-              - closingTime
-        exceptionalClosures:
-          type: array
-          description: 'List with exceptional closures for Access Point. Minimum unit of exceptional closure is one day.'
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/ExceptionalClosure'
-      required:
-        - accessPointId
-        - accessPointName
-        - isActive
-        - timeZone
-        - address
-        - standardHours
-        - capabilities 
-
-    AccessTokenRequest:
-      type: object
-      properties:
-        client_id: 
-          type: string
-          example: 'amzn1.application-oa2-client.5f4deb235c3....REDACTED'
-          description: 'Client ID received as part of security profile.'
-        client_secret: 
-          type: string
-          example: '4244a2183d4c67aa66f15b4923f4496a5e14a1a326c96c5606715505dfbc7544'
-          description: 'Client secret received as part of security profile.'
-        grant_type: 
-          type: string
-          default: client_credentials
-        scope: 
-          type: string
-          default: accesspoints::accesspoint:readwrite
-
-    AccessTokenResponse:
-      type: object
-      properties:
-        access_token: 
-          type: string
-          example: 'Atc|MQEWYJxEnP3I1ND03ZzbY...REDACTED'
-          description: 'Bearer token - authenticates API requests.'
-        expires_in: 
-          type: integer
-          description: 'Expiration time in seconds since issue of token.'
-          default: 3600
-        scope: 
-          type: string
-          description: 'Scope relevant to this token.'
-          default: 'accesspoints::accesspoint:readwrite'
-        token_type: 
-          type: string
-          description: 'Access token type.'
-          default: 'Bearer'
-
-    AccessTokenResponseError:
-      type: object
-      properties:
-        error: 
-          type: string
-          example: 'invalid_client'
-        error_description: 
-          type: string
-          example: 'Client authentication failed'
-
-
-  
-
-    FeedsRequest:
-      type: object
-      description: 'Feed containing list of Access Aoints to be processed.'
-      properties: 
-        accessPoints: 
-          type: array
-          description: 'List of partner Access Points to be processed.'
-          items:
-            $ref: '#/components/schemas/AccessPoint'
-    FeedsResponse:
-      type: object
-      properties:
-        feedId: 
-          type: string
-          example: '0fbee22e-e455-44d5-9a5d-14fd1a345055'
-          description: 'Unique identifier representing request.'
-        clientId: 
-          type: string
-          example: 'Atc|MQEWYJxEnP3I1ND03ZzbY...REDACTED'
-          description: ClientId received as part of security profile.
-        sequenceNumber: 
-          type: integer
-          example: 160
-          description: 'Incremental number assigned to the feed.'
-        status: 
-          type: string
-          example: 'Completed'
-          enum: [Processing, Failed, Completed]
-          description: '**Processing** corresponds to a feed that is still being processed, **Completed** to feeds fully processed and **Failed** if the feed processing failed. * **Failed:** This error code will be given as part of failure which can
-          not be recovered. For instance, data configured in downstream service is not correct. No Output document will be generated in such scenarios. * **Processing:** The Input Document is still in process. * **Completed:** The Input Document processing is completed and the corresponding Output Document is generated.'
-        inputDocuments: 
-            type: array
-            description: 'Input Document list.' 
-            items:
-              $ref: '#/components/schemas/Document'
-        outputDocuments:
-            type: array
-            description: 'Output Document list.'
-            items:
-              $ref: '#/components/schemas/Document'
-        createDate: 
-          type: integer
-          example: 1572273619584
-          description: 'Epoch time of feed submission.'
-
-    MidDayClosure:
-      type: object
-      properties:
-        startTime:
-          type: string
-          example: '14:00:00'
-          description: |
-            Midday closure closing time (if any) in the format `HH:MM:SS`.
-
-            E.g. `14:00:00`
-          pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
-        endTime:
-          type: string
-          example: '15:00:00'
-          description: |
-            Midday closure opening time (if any) in the format `HH:MM:SS`.
-
-            E.g. `15:00:00`
-          pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
-      required:
-        - startTime
-        - endTime
-
-    ExceptionalClosure:
-      type: object
-      properties:
-        startDateTime:
-          type: string
-          example: '2018-06-30'
-          description: |
-            Exceptional closure start date in the format `YYYY-MM-DD`
-
-            E.g. `2018-06-30`
-          pattern: '^(20[1-9][0-9])-(0[0-9]|1[0-2])-(0[1-9]|([12][0-9]|3[01]))(T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?$'
-        endDateTime:
-          type: string
-          example: '2018-07-10'
-          description: |
-            Exceptional closure end date in the format `YYYY-MM-DD`
-
-            E.g. `2018-07-10`
-          pattern: '^(20[1-9][0-9])-(0[0-9]|1[0-2])-(0[1-9]|([12][0-9]|3[01]))(T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?$'
-      required:
-        - startDateTime
-        - endDateTime
-
-    AuthError:
-      type: object
-      properties:
-        message: 
-          type: string
-          example: 'Unexpected Authorization token format'
-        retryable: 
-          type: boolean
-          example: false
-
-    NotFoundError:
-      type: object
-      properties:
-        message: 
-          type: string
-          example: 'Requested resource does not exist'
-        retryable: 
-          type: boolean
-          example: false
-
-    ProcessingError:
-      type: object
-      properties:
-        errorCode:
-          type: string
-          example: 'INVALID_ISACTIVE_FLAG_STATE'
-          enum:
-            - INVALID_ACCESS_POINT_ID
-            - INVALID_ACCESS_POINT_NAME
-            - INVALID_ACTIVE_FLAG
-            - INVALID_TIMEZONE
-            - INVALID_TERMINATION_DATE
-            - INVALID_CAPABILITIES
-            - INVALID_ADDRESS
-            - INVALID_STANDARD_HOURS
-            - INVALID_EXCEPTION_CLOSURES
-            - INVALID_CAPACITY
-            - INVALID_DAY
-            - INVALID_OPENING_TIME
-            - INVALID_CLOSING_TIME
-            - INVALID_START_TIME
-            - INVALID_END_TIME
-            - INVALID_START_DATE_TIME
-            - INVALID_END_DATE_TIME
-            - INVALID_MID_DAY_CLOSURES
-            - INVALID_COMMUNICATION_DETAILS
-            - INVALID_EMAIL_ID
-            - INVALID_PHONE_NUMBER
-            - INVALID_COUNTRY_CODE
-            - INVALID_LATITUDE
-            - INVALID_LONGITUDE
-            - INVALID_CITY
-            - INVALID_ADDRESS_FIELD_ONE
-            - DUPLICATE_STORE_ENTRY
-            - INVALID_ISACTIVE_FLAG_STATE
-            - INVALID_STORE_STATE
-            - STORE_CREATION_FAILURE
-            - STORE_UPDATION_FAILURE
-            - UNABLE_TO_UPDATE_STORE_STATUS
-            - UNABLE_TO_UPDATE_STORE_CAPABILITY
-            - UNABLE_TO_UPDATE_STORE_CAPABILITY_STATUS
-            - UNABLE_TO_UPDATE_CAPACITY
-            - UNABLE_TO_UPDATE_CLIENT_REF
-          description: |
-            A unique error code to identify the problem. The value will only be present in case of failure.
-            * `INVALID_ACCESS_POINT_ID` - Access point Id is not valid or missing. Sample error message: [INVALID_ACCESS_POINT_ID] required key [accessPointId] not found.
-            * `INVALID_ACCESS_POINT_NAME` - Access point name is not valid or missing. Sample error message: [INVALID_ACCESS_POINT_NAME] required key [accessPointName] not found.
-            * `INVALID_ACTIVE_FLAG` - isActive Flag is not valid or missing. For example sample error message will be: [INVALID_ACTIVE_FLAG] required key [isActive] not found.
-            * `INVALID_TIMEZONE` - TimeZone is not valid or missing. For example sample error message will be: [INVALID_TIMEZONE] TimeZone is not valid.
-            * `INVALID_TERMINATION_DATE` - Termination is not valid or missing.
-            * `INVALID_CAPABILITIES` - Capabilities are not valid or missing.
-            * `INVALID_ADDRESS` - Invalid address. NOTE: Two letter country code is required, address cannot be duplicated.
-            * `INVALID_STANDARD_HOURS` - Standard hours for an access point should be as per schema. If not, this error code will be returned. **NOTE**: Opening hours must be earlier than Closing hours.
-            * `INVALID_EXCEPTION_CLOSURES` - Exceptional closures override standard hours. Format of these should be as per the schema. **NOTE**: Initial date must be earlier than final date.
-            * `INVALID_CAPACITY` - This exception code describes one of the following scenario. 1. Threshold Key is absent in the capacity object. [E.g. Error Message: [INVALID_CAPACITY_THRESHOLD] required key [threshold] not found]. 2. Threshold Key value is less than five. [E.g. error messages: [INVALID_CAPACITY_THRESHOLD] <x> is not higher than or equal to five]
-            * `INVALID_DAY` - Invalid day format.
-            * `INVALID_OPENING_TIME` - Invalid time format. Please check schema for allowed format.
-            * `INVALID_CLOSING_TIME`
-            * `INVALID_START_TIME`
-            * `INVALID_END_TIME`
-            * `INVALID_START_DATE_TIME`
-            * `INVALID_END_DATE_TIME`
-            * `INVALID_MID_DAY_CLOSURES` - MidDay closures should be as per the schema, otherwise this error code will be returned. Opening and closing time should be such that opening time is before closing time.
-            * `INVALID_COMMUNICATION_DETAILS` - Returned in case schema is not followed for a given input.
-            * `INVALID_EMAIL_ID`
-            * `INVALID_PHONE_NUMBER`
-            * `INVALID_COUNTRY_CODE`
-            * `INVALID_LATITUDE`
-            * `INVALID_LONGITUDE`
-            * `INVALID_CITY`
-            * `INVALID_ADDRESS_FIELD_ONE`
-            * `DUPLICATE_STORE_ENTRY` - A given access point entry is duplicated based on its id. Sample error message: [DUPLICATE_STORE_ENTRY] This is a duplicate store entry, index occurrences are: [1, 2]
-            * `INVALID_ISACTIVE_FLAG_STATE` - isActive flag value has not expected value. For example, to create an access point isActive flag value has to be true. Sample error message: [INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.
-            * `INVALID_STORE_STATE` - This error code indicates that store is not in a valid state to perform certain operation. For example, a store cannot be marked as active or inactive if it exists in planned state. Sample error message: [INVALID_STORE_STATE] Store is in planned state, cannot be updated to active or inactive state.
-            * `STORE_CREATION_FAILURE` - Failure in Amazon services, please report this error to Amazon and retry.
-            * `STORE_UPDATION_FAILURE`
-            * `UNABLE_TO_UPDATE_STORE_STATUS`
-            * `UNABLE_TO_UPDATE_STORE_CAPABILITY`
-            * `UNABLE_TO_UPDATE_STORE_CAPABILITY_STATUS`
-            * `UNABLE_TO_UPDATE_CAPACITY`
-            * `UNABLE_TO_UPDATE_CLIENT_REF` - This error indicates that given accessPointId is not updated for a given store. Sample message will be: [UNABLE_TO_UPDATE_CLIENT_REF] Unable to update accessPointId for created store accessPointId1
-        errorMessage:
-          type: string
-          example: '[INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.'
-          description: 'The error message in user-friendly format.'    
-
-    Document:
-      type: object
-      properties:
-        documentId: 
-          type: string
-          example: 'amzn1.tortuga.3.a74d493a-0767-4620-902f-3f05dd8cfc02.T2P91TLO6KF549'
-          description: 'Unique id representing the document.'
-        documentType: 
-          type: string
-          example: 'OutputDocument'
-          enum: [InputDocument, OutputDocument]
-          description: 'Document type.'
-
-    OutputDocument:
-      type: object
-      description: 'Holds processing details for submitted feed.'
-      properties:
-        feedId:
-          description: 'Corresponds to feed submission feedId.'
-          example: '0fbee22e-e455-44d5-9a5d-14fd1a345055'
-          type: string
-        noOfAccessPointsProcessed:
-          description: 'Total number of Access Points being processed.'
-          example: 2
-          type: integer
-        noOfAccessPointsSuccessfullyProcessed:
-          description: 'Total number of Access Points successfully updated for the feed submitted.'
-          example: 1
-          type: integer
-        noOfAccessPointsFailedToProcess:
-          example: 1
-          description: 'Total number of Access Points unable to process due to errors.'
-          type: integer
-        failedAccessPointProcessingDetails:
-          type: array
-          description: Detailed list of errors for this feed.
-          items:
-            type: object
-            properties:
-              indexNumber:
-                description: 'Corresponds to index of entry in Input feed.'
-                example: 1
-                type: integer
-              accesspointId: 
-                description: 'Unique Id for the Access Point provided at time of feed submission.'
-                example: 'ACM-0045'
-                type: string
-              resultStatus:
-                description: 'Enum property which dictates the success, failure and warning cases.'
-                example: 'FAILURE'
-                type: string
-                enum: [SUCCESS, WARNING, FAILURE]
-              errors:
-                type: array
-                description: 'List of processing errors and their description.'
-                items:
-                  $ref: '#/components/schemas/ProcessingError'
-            required:
-              - indexNumber
-              - accesspointId
-              - resultStatus
-      required:
-        - feedId
-        - noOfAccessPointsProcessed
-        - noOfAccessPointsSuccessfullyProcessed
-        - noOfAccessPointsFailedToProcess
+    
+    ## APPENDIX III - Error Description
+    A unique error code to identify the problem. The value will only be present in case of failure.
+    * `INVALID_ACCESS_POINT_ID` - Access point Id is not valid or missing. Sample error message: [INVALID_ACCESS_POINT_ID] required key [accessPointId] not found.
+    * `INVALID_ACCESS_POINT_NAME` - Access point name is not valid or missing. Sample error message: [INVALID_ACCESS_POINT_NAME] required key [accessPointName] not found.
+    * `INVALID_ACTIVE_FLAG` - isActive Flag is not valid or missing. For example sample error message will be: [INVALID_ACTIVE_FLAG] required key [isActive] not found.
+    * `INVALID_TIMEZONE` - TimeZone is not valid or missing. For example sample error message will be: [INVALID_TIMEZONE] TimeZone is not valid.
+    * `INVALID_TERMINATION_DATE` - Termination is not valid or missing.
+    * `INVALID_CAPABILITIES` - Capabilities are not valid or missing.
+    * `INVALID_ADDRESS` - Invalid address. NOTE: Two letter country code is required, address cannot be duplicated.
+    * `INVALID_STANDARD_HOURS` - Standard hours for an access point should be as per schema. If not, this error code will be returned. **NOTE**: Opening hours must be earlier than Closing hours.
+    * `INVALID_EXCEPTION_CLOSURES` - Exceptional closures override standard hours. Format of these should be as per the schema. **NOTE**: Initial date must be earlier than final date.
+    * `INVALID_CAPACITY` - This exception code describes one of the following scenario. 1. Threshold Key is absent in the capacity object. [E.g. Error Message: [INVALID_CAPACITY_THRESHOLD] required key [threshold] not found]. 2. Threshold Key value is less than five. [E.g. error messages: [INVALID_CAPACITY_THRESHOLD] <x> is not higher than or equal to five]
+    * `INVALID_DAY` - Invalid day format.
+    * `INVALID_OPENING_TIME` - Invalid time format. Please check schema for allowed format.
+    * `INVALID_CLOSING_TIME`
+    * `INVALID_START_TIME`
+    * `INVALID_END_TIME`
+    * `INVALID_START_DATE_TIME`
+    * `INVALID_END_DATE_TIME`
+    * `INVALID_MID_DAY_CLOSURES` - MidDay closures should be as per the schema, otherwise this error code will be returned. Opening and closing time should be such that opening time is before closing time.
+    * `INVALID_COMMUNICATION_DETAILS` - Returned in case schema is not followed for a given input.
+    * `INVALID_EMAIL_ID`
+    * `INVALID_PHONE_NUMBER`
+    * `INVALID_COUNTRY_CODE`
+    * `INVALID_LATITUDE`
+    * `INVALID_LONGITUDE`
+    * `INVALID_CITY`
+    * `INVALID_ADDRESS_FIELD_ONE`
+    * `DUPLICATE_STORE_ENTRY` - A given access point entry is duplicated based on its id. Sample error message: [DUPLICATE_STORE_ENTRY] This is a duplicate store entry, index occurrences are: [1, 2]
+    * `INVALID_ISACTIVE_FLAG_STATE` - isActive flag value has not expected value. For example, to create an access point isActive flag value has to be true. Sample error message: [INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.
+    * `INVALID_STORE_STATE` - This error code indicates that store is not in a valid state to perform certain operation. For example, a store cannot be marked as active or inactive if it exists in planned state. Sample error message: [INVALID_STORE_STATE] Store is in planned state, cannot be updated to active or inactive state.
+    * `STORE_CREATION_FAILURE` - Failure in Amazon services, please report this error to Amazon and retry.
+    * `STORE_UPDATION_FAILURE`
+    * `UNABLE_TO_UPDATE_STORE_STATUS`
+    * `UNABLE_TO_UPDATE_STORE_CAPABILITY`
+    * `UNABLE_TO_UPDATE_STORE_CAPABILITY_STATUS`
+    * `UNABLE_TO_UPDATE_CAPACITY`
+    * `UNABLE_TO_UPDATE_CLIENT_REF` - This error indicates that given accessPointId is not updated for a given store. Sample message will be: [UNABLE_TO_UPDATE_CLIENT_REF] Unable to update accessPointId for created store accessPointId1
+    * `DUPLICATE_LOGIN_CLAIM_ENTRY` - This error code indicates that a given login claim entry is duplicated based on its value. Sample error message: [DUPLICATE_LOGIN_CLAIM_ENTRY] This is a duplicate login claim entry, index occurrences are: [1, 2]
+    * `INVALID_LOGIN_CLAIM` - This error code indicates that given login claim does not adhere to a valid email in RFC 5322 format or valid phone number in E164 format. Sample error message: [INVALID_LOGIN_CLAIM] Login claim is not valid. Phone number should be in international or E164 format and email in RFC 5322 format
+    * `MISSING_LOGIN_CLAIM` - This error code is applicable for clients approved for login claim flow. It indicates that either the login claim was not provided while onboarding a new store or login claim was not provided for an existing store already associated with some login claim. Sample error message: [MISSING_LOGIN_CLAIM] This is a required field when onboarding a new store or when updating the store already associated with a login claim.
+    * `LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE` - This error code indicates the login claim cannot be used for current store as it is already being used for a different store, please use a different login claim to register. Sample error message: [LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE] There is already a store associated with this login claim. Please use a different login claim to register.
+    * `UNABLE_TO_PROCESS_LOGIN_CLAIM` - This error code indicates the login claim was not processed successfully due to failure in Amazon services, please report it to Amazon and retry. Sample error message: [UNABLE_TO_PROCESS_LOGIN_CLAIM] There was an error processing the login claim. Please try again or contact Amazon Hub Representative if error persists.
