@@ -225,7 +225,6 @@ info:
                   </code>
                 </td>
             </tr>
-
             <tr>
                 <td>500</td>
                 <td>Access Point API internal server error</td>
@@ -1005,6 +1004,32 @@ components:
             There is a 50-character limit for this field - therefore 29 characters available following `Amazon Hub Counter - ` to provide location business name and descriptor.
 
             > **NOTE**: If this is a third party pick-up point the `Amazon Hub Counter - ` prefix does not apply.
+        loginClaim:
+          type: string
+          example: 'store123@companydomain.com or +447999999123'
+          description: |
+            Unique email address or mobile phone accessible by store manager that will be associated with the store. Store manager will either create a new Amazon account or sign into Counter app using this loginClaim for the store. A loginClaim can only be mapped to one store at a time.
+
+            Email loginClaim must only be provided in RFC 5322 format and phone loginClaim must be provided in international format, preferably E164; beginning with + and country code. E.g. email: store123@companydomain.com, phone: +447999999123. Please note that loginClaim is case insensitive and email loginClaims such as abc@xyz.com will be treated same as ABC@xyz.com. Similarly, phone numbers such as +447999999123 and +44(7999)-999123 will be treated as same.
+       
+            loginClaim is honoured only for approved clients. For unapproved clients, the field is ignored even if sent in the feed. Please contact your Amazon Hub Representative to check if you are approved for using this field.
+
+            loginClaim is not mandatory for existing stores that were onboarded without loginClaims, but is mandatory for any new stores of approved clients and stores which are already associated to some loginClaims in Amazon systems.
+
+            Stores onboarded with loginClaim will receive location activation notification via either email or SMS depending upon the channel provided in communication details. Email takes precedence over SMS in case both are provided. In case no communication details are provided, notification will be sent to email or phone that was provided in the loginClaim field.
+
+            loginClaim is an updatable field for a store record as long as the input loginClaim has not been used for a store activation on Counter app. In other words, if a loginClaim X is mapped to store Y which was previously activated, then the loginClaim X cannot be used for any other store.
+
+            Once a partner maps a loginClaim to a store, no other client can use that same loginClaim to map to any of their stores. Thus, loginClaims are reserved within the Partner namespace. However, the same Partner is allowed to update the login claims for its planned stores as many times as required.
+
+            It is recommended to send loginClaims for all the stores in a single feed. To understand why, let us consider the following scenario: 
+            - Partner submits a feed to onboard store Y with loginClaim A and store Z with loginClaim B. 
+            - loginClaim A is mapped to store Y, while login claim B is mapped to store Z. 
+            - The Partner then sends a feed to update store Z with loginClaim A. Given both the stores are in the 'Planned' state and belong to same client, operation will succeed. 
+            - Since a loginClaim can be mapped only to one store at a time, loginClaim A will finally be mapped to store Z, whilst loginClaim B will be removed from the system, leaving store Y abandoned. 
+            To mitigate this risk, clients are advised to send loginClaims for all the stores in a single feed.
+
+            > **NOTE**: The field is not applicable for third party pickup points. 
         isActive:
           type: boolean
           example: true
@@ -1039,7 +1064,9 @@ components:
         communicationDetails:
           type: object
           description: |
-            Access Point contact details - mandatory for Amazon Hub Counter locations as store registration email is sent to the *emailId* specified here.
+            Access Point contact details - mandatory for Amazon Hub Counter locations which are not using loginClaim field as store registration email is sent to the *emailId* specified here.
+
+            This field is optional for stores onboarded with loginClaim, who will receive location activation notification via either email or SMS depending upon the channel provided in communication details. Email takes precedence over SMS in case both are provided. In case no communication details are provided, notification will be sent on email or phone that was provided in the login claim field.
 
             > **NOTE**: This field is not mandatory for third party pick-up points.
           properties:
@@ -1462,6 +1489,11 @@ components:
             - UNABLE_TO_UPDATE_STORE_CAPABILITY_STATUS
             - UNABLE_TO_UPDATE_CAPACITY
             - UNABLE_TO_UPDATE_CLIENT_REF
+            - DUPLICATE_LOGIN_CLAIM_ENTRY 
+            - INVALID_LOGIN_CLAIM
+            - MISSING_LOGIN_CLAIM
+            - LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE
+            - UNABLE_TO_PROCESS_LOGIN_CLAIM
           description: |
             A unique error code to identify the problem. The value will only be present in case of failure.
             * `INVALID_ACCESS_POINT_ID` - Access point Id is not valid or missing. Sample error message: [INVALID_ACCESS_POINT_ID] required key [accessPointId] not found.
@@ -1500,6 +1532,11 @@ components:
             * `UNABLE_TO_UPDATE_STORE_CAPABILITY_STATUS`
             * `UNABLE_TO_UPDATE_CAPACITY`
             * `UNABLE_TO_UPDATE_CLIENT_REF` - This error indicates that given accessPointId is not updated for a given store. Sample message will be: [UNABLE_TO_UPDATE_CLIENT_REF] Unable to update accessPointId for created store accessPointId1
+            * `DUPLICATE_LOGIN_CLAIM_ENTRY` - This error code indicates that a given login claim entry is duplicated based on its value. Sample error message: [DUPLICATE_LOGIN_CLAIM_ENTRY] This is a duplicate login claim entry, index occurrences are: [1, 2]
+            * `INVALID_LOGIN_CLAIM` - This error code indicates that given login claim does not adhere to a valid email in RFC 5322 format or valid phone number in E164 format. Sample error message: [INVALID_LOGIN_CLAIM] Login claim is not valid. Phone number should be in international or E164 format and email in RFC 5322 format
+            * `MISSING_LOGIN_CLAIM` - This error code is applicable for clients approved for login claim flow. It indicates that either the login claim was not provided while onboarding a new store or login claim was not provided for an existing store already associated with some login claim. Sample error message: [MISSING_LOGIN_CLAIM] This is a required field when onboarding a new store or when updating the store already associated with a login claim.
+            * `LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE` - This error code indicates the login claim cannot be used for current store as it is already being used for a different store, please use a different login claim to register. Sample error message: [LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE] There is already a store associated with this login claim. Please use a different login claim to register.
+            * `UNABLE_TO_PROCESS_LOGIN_CLAIM` - This error code indicates the login claim was not processed successfully due to failure in Amazon services, please report it to Amazon and retry. Sample error message: [UNABLE_TO_PROCESS_LOGIN_CLAIM] There was an error processing the login claim. Please try again or contact Amazon Hub Representative if error persists.
         errorMessage:
           type: string
           example: '[INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.'
