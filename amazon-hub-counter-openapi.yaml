@@ -159,8 +159,8 @@ info:
     #### When to use exceptional closures and when inactivations how it appears?.
     When the closure will be longer than 3 days the store has to be deactivate. For less than 3 days, a temporary closure can be use. For both cases would be ideally, for not interfiere in the bussines daily oprations make
    
-    #### Can Stores be placed in the same address but with different Store Name?
-    Yes, but there must be a difference in the address, for example a comma or a capitalization in a word.
+    #### Can stores be created with the same address but with a different store_name?
+    Yes, but they need to have different store name. It is taken into account for identifying the store.
     
     #### Can we select Null values?
     For the fields which aren’t marked required, those can be skipped from the JSON schema in the feed. Although, if they are being provided, they can’t be null or empty.
