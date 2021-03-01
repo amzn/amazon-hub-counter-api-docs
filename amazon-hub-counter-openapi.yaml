@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: 'Amazon Hub Counter API local'
+  title: 'Amazon Hub Counter API'
   description: |
     Amazon's API for creating and updating Amazon Hub Counter Access Points. 
     
