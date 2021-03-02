@@ -148,18 +148,18 @@ info:
     This is not possible currently via the API. Upon request, we can generate a csv file with the list of your stores in the production environment.
 
     #### Can you send the entire list of locations?
-    Yes, but keep in mind that in case you have more than 3000 locations, you will have to chop the file into differnt ones, doing calls with a max of 3000 stores per file.
+    If the number of stores is less than 3000, you can send all of them together in one single feed. Or else, please divide the list in different feeds with no more than 3000 stores per feed.
    
-    #### Should we include one store per feed, or all the stores within the same feed?
-    All the stores that will be created or updated have to be sent in the same feed.
+    #### Should we send one store per feed or all stores can be sent in a single feed?
+    As mentioned above, no more than 3000 stores should be sent in a single feed. For less than 3000 stores, only one feed should used to create/update stores.
 
-    #### Do we need a developer email address only used for this specific topic? 
+    #### Do we need a developer email address only used for this specific purpose? 
     We strongly suggest to use an specific email for this to avoid access problems in the future with personal emails. 
    
-    #### When to use exceptional closures and when inactivations how it appears?.
-    When the closure will be longer than 3 days the store has to be deactivate. For less than 3 days, a temporary closure can be use. For both cases would be ideally, for not interfiere in the bussines daily oprations make
+    #### When to use exceptional closures and when inactivations how it appears?
+    When the store needs to be closed for more than 3 days, the store should be deactivated. For less than 3 days, temporary closures should be used.
    
-    #### Can stores be created with the same address but with a different store_name?
+    #### Can stores be created with the same address but with a different store name?
     Yes, but they need to have different store name. It is taken into account for identifying the store.
     
     #### Can we select Null values?
@@ -1633,5 +1633,3 @@ components:
         - noOfAccessPointsProcessed
         - noOfAccessPointsSuccessfullyProcessed
         - noOfAccessPointsFailedToProcess
-
-   
