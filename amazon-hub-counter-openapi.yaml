@@ -156,7 +156,7 @@ info:
     #### Do we need a developer email address only used for this specific purpose? 
     We strongly suggest to use an specific email for this to avoid access problems in the future with personal emails. 
    
-    #### When to use exceptional closures and when inactivations how it appears?
+    #### When should we use exceptional closures and when to deactivate a store?
     When the store needs to be closed for more than 3 days, the store should be deactivated. For less than 3 days, temporary closures should be used.
    
     #### Can stores be created with the same address but with a different store name?
@@ -169,7 +169,7 @@ info:
     For this particular scenario, input hours provided in the feed should be local for opening hours although different timezone should be specified via “timezone” field in the feed.
    
     #### Which fields are mandatory and which ones are optional? `Applicable only for feedType=3P`
-    For a 3P succeed in creating an access point the mandatory fields are “accessPointId", "accessPointName", "isActive", "timeZone", "address", "standardHours", "capabilities".  
+    For a 3P feed type, the mandatory fields are “accessPointId", "accessPointName", "isActive", "timeZone", "address", "standardHours", "capabilities".  
    
     # Appendices
 
