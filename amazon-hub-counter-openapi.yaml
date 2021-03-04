@@ -87,7 +87,7 @@ info:
     |   FE   | https://accesspoints-api-fe.amazon.com |
 
     # FAQ
-
+    
     #### How do I submit regular store closures (e.g. a location close on Sundays)?
     You can skip entries for regular closure days in the standardHours array (e.g. skip SUNDAY if the location is closed on Sundays).
 
@@ -147,6 +147,30 @@ info:
     #### How do I get a list of the Access Points I have submitted?
     This is not possible currently via the API. Upon request, we can generate a csv file with the list of your stores in the production environment.
 
+    #### Can you send the entire list of locations?
+    If the number of stores is less than 3000, you can send all of them together in one single feed. Or else, please divide the list in different feeds with no more than 3000 stores per feed.
+   
+    #### Should we send one store per feed or all stores can be sent in a single feed?
+    As mentioned above, no more than 3000 stores should be sent in a single feed. For less than 3000 stores, only one feed should used to create/update stores.
+
+    #### Do we need a developer email address only used for this specific purpose? 
+    We strongly suggest to use an specific email for this to avoid access problems in the future with personal emails. 
+   
+    #### When should we use exceptional closures and when to deactivate a store?
+    When the store needs to be closed for more than 3 days, the store should be deactivated. For less than 3 days, temporary closures should be used.
+   
+    #### Can stores be created with the same address but with a different store name?
+    Yes, but they need to have different store name. It is taken into account for identifying the store.
+    
+    #### Can we select Null values?
+    For the fields which aren’t marked required, those can be skipped from the JSON schema in the feed. Although, if they are being provided, they can’t be null or empty.
+    
+    #### Which timezone should we select for country that have 2 timezones?
+    For this particular scenario, input hours provided in the feed should be local for opening hours although different timezone should be specified via “timezone” field in the feed.
+   
+    #### Which fields are mandatory and which ones are optional? `Applicable only for feedType=3P`
+    For a 3P feed type, the mandatory fields are “accessPointId", "accessPointName", "isActive", "timeZone", "address", "standardHours", "capabilities".  
+   
     # Appendices
 
     ## APPENDIX I - API HTTP response status codes
@@ -1537,6 +1561,7 @@ components:
             * `MISSING_LOGIN_CLAIM` - This error code is applicable for clients approved for login claim flow. It indicates that either the login claim was not provided while onboarding a new store or login claim was not provided for an existing store already associated with some login claim. Sample error message: [MISSING_LOGIN_CLAIM] This is a required field when onboarding a new store or when updating the store already associated with a login claim.
             * `LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE` - This error code indicates the login claim cannot be used for current store as it is already being used for a different store, please use a different login claim to register. Sample error message: [LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE] There is already a store associated with this login claim. Please use a different login claim to register.
             * `UNABLE_TO_PROCESS_LOGIN_CLAIM` - This error code indicates the login claim was not processed successfully due to failure in Amazon services, please report it to Amazon and retry. Sample error message: [UNABLE_TO_PROCESS_LOGIN_CLAIM] There was an error processing the login claim. Please try again or contact Amazon Hub Representative if error persists.
+       
         errorMessage:
           type: string
           example: '[INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.'
