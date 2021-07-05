@@ -60,8 +60,7 @@ info:
 
     > ![Locating the Security Profile Client ID](assets/security_profiles_4.gif)
 
-    There is a maximum number of 15 calls allowed to be consumed trhough the API a day. In case there is an specific business case where the partner needs to perform more than 15 calls a day, the case can be studied in order to increase the limit.  
-
+    There is a maximum number of 15 calls allowed to be consumed trhough the API a day. In case there is an specific business case where the partner needs to perform more than 15 calls a day, the case can be studied in order to increase the limit throught the API.  
     # Endpoints
     
     ## Authentication
@@ -240,8 +239,8 @@ info:
             </tr>
             <tr>
                 <td>429</td>
-                <td>Call execed the maximun number of default allowed calls.</td>
-                <td>Response received when the partner reach the maximum number of allowd calls to the API.</td>
+                <td>Call exceeded the maximum number of default allowed calls.</td>
+                <td>Response received when the partner reach the maximum number of allowed calls to the API.</td>
                 <td>
                   <code>
                   { <br/>
