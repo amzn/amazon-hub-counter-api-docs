@@ -60,7 +60,7 @@ info:
 
     > ![Locating the Security Profile Client ID](assets/security_profiles_4.gif)
 
-    There is a maximum number of 15 calls allowed to be consumed trhough the API a day. In case there is an specific business case where the partner needs to perform more than 15 calls a day, the case can be studied in order to increase the limit throught the API.  
+    Partners can send a maximum number of 15 API calls per day. If there is a specific business case for the Partner to perform more than 15 calls a day, please contact your Amazon representative to approve a temporary limit increase.
     # Endpoints
     
     ## Authentication
