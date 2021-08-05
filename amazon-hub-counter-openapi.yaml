@@ -1563,8 +1563,8 @@ components:
             * `DUPLICATE_STORE_ENTRY` - A given access point entry is duplicated based on its id. Sample error message: [DUPLICATE_STORE_ENTRY] This is a duplicate store entry, index occurrences are: [1, 2]
             * `INVALID_ISACTIVE_FLAG_STATE` - isActive flag value has not expected value. For example, to create an access point isActive flag value has to be true. Sample error message: [INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.
             * `INVALID_STORE_STATE` - This error code indicates that store is not in a valid state to perform certain operation. For example, a store cannot be marked as active or inactive if it exists in planned state. Sample error message: [INVALID_STORE_STATE] Store is in planned state, cannot be updated to active or inactive state.
-            * `STORE_CREATION_FAILURE` - Failure in Amazon services, please report this error to Amazon and retry.
-            * `STORE_UPDATION_FAILURE`
+            * `STORE_CREATION_FAILURE` - If the error message contains error sub code related to invalid address, it denotes bad input provided by client that can be fixed by client themselves. For all other usecases, it denotes failure in Amazon services, please report this error to Amazon and retry.
+	          * `STORE_UPDATION_FAILURE` - If the error message contains error sub code related to invalid address, it denotes bad input provided by client that can be fixed by client themselves. For all other usecases, it denotes failure in Amazon services, please report this error to Amazon and retry.
             * `UNABLE_TO_UPDATE_STORE_STATUS`
             * `UNABLE_TO_UPDATE_STORE_CAPABILITY`
             * `UNABLE_TO_UPDATE_STORE_CAPABILITY_STATUS`
@@ -1579,7 +1579,40 @@ components:
         errorMessage:
           type: string
           example: '[INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.'
-          description: 'The error message in user-friendly format.'    
+          description: |
+	          The error message in user-friendly format. Error message consists of two parts - error sub code and error message. Error sub code is enclosed in square brackets i.e. [].
+	          For invalid address use cases that fall under STORE_CREATION_FAILURE or STORE_UPDATION_FAILURE, the following error subcodes can be present in the error message. These errors are due to the bad input provided by the clients and clients should be able to fix these by themselves.
+	          * `MISSING_REGION` - Region is empty or missing from address. Sample error message: [MISSING_REGION] region is empty or missing from address.
+	          * `MISSING_DISTRICT` - District is empty or missing from address. Sample error message: [MISSING_DISTRICT] district is empty or missing from address.
+	          * `INVALID_ADDRESS_FIELD_ONE` - Address Field One is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_ONE] addressFieldOne is invalid.
+	          * `INVALID_ADDRESS_FIELD_TWO` - Address Field Two is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_TWO] addressFieldTwo is invalid.
+	          * `INVALID_ADDRESS_FIELD_THREE` - Address Field Three is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_THREE] addressFieldThree is invalid.
+	          * `INVALID_CITY` - City is invalid. For example sample error message will be: [INVALID_CITY] city is invalid.
+	          * `INVALID_REGION` - Region is invalid. For example sample error message will be: [INVALID_REGION] region is invalid.
+	          * `INVALID_COUNTRY_CODE` - Country Code is invalid. For example sample error message will be: [INVALID_COUNTRY_CODE] countryCode is invalid.
+	          * `INVALID_POSTAL_CODE` - Postal Code is invalid. This could mean invalid postal code format like any postal code not having 5 digits is invalid in countries like ES and DE. For example sample error message will be: [INVALID_POSTAL_CODE] postalCode is invalid.
+	          * `INVALID_DISTRICT` - District is invalid. For example sample error message will be: [INVALID_DISTRICT] district is invalid.
+	          * `INVALID_PHONE_NUMBER` - Phone Number is invalid. For example sample error message will be: [INVALID_PHONE_NUMBER] phoneNumber is invalid.
+	          * `INVALID_ACCESS_POINT_NAME` - Access Point Name is invalid. This could mean name contains special characters other than .(dot) ,(comma) '(apostrophe) and -(hyphen). For example sample error message will be: [INVALID_ACCESS_POINT_NAME] accessPointName is invalid.
+	          * `INVALID_ADDRESS_FIELD_ONE_ADDRESS_STREET_INCOMPLETE` - Address street incomplete: Address Field One is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_ONE_ADDRESS_STREET_INCOMPLETE] addressFieldOne is invalid, address street incomplete.
+	          * `INVALID_ADDRESS_FIELD_TWO_ADDRESS_STREET_INCOMPLETE` - Address street incomplete: Address Field Two is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_TWO_ADDRESS_STREET_INCOMPLETE] addressFieldTwo is invalid, address street incomplete.
+	          * `INVALID_ADDRESS_FIELD_THREE_ADDRESS_STREET_INCOMPLETE` - Address street incomplete: Address Field Three is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_THREE_ADDRESS_STREET_INCOMPLETE] addressFieldThree is invalid, address street incomplete.
+	          * `INVALID_CITY_ADDRESS_STREET_INCOMPLETE` - Address street incomplete: City is invalid. For example sample error message will be: [INVALID_CITY_ADDRESS_STREET_INCOMPLETE] city is invalid, address street incomplete.
+	          * `INVALID_POSTAL_CODE_ADDRESS_STREET_INCOMPLETE` - Address street incomplete: Postal Code is invalid. For example sample error message will be: [INVALID_POSTAL_CODE_ADDRESS_STREET_INCOMPLETE] postalCode is invalid, address street incomplete.
+	          * `INVALID_ADDRESS_FIELD_ONE_ADDRESS_STREET_NOT_FOUND` - Address street not found: Address Field One is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_ONE_ADDRESS_STREET_NOT_FOUND] addressFieldOne is invalid, address street not found.
+	          * `INVALID_ADDRESS_FIELD_TWO_ADDRESS_STREET_NOT_FOUND` - Address street not found: Address Field Two is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_TWO_ADDRESS_STREET_NOT_FOUND] addressFieldTwo is invalid, address street not found.
+	          * `INVALID_ADDRESS_FIELD_THREE_ADDRESS_STREET_NOT_FOUND` - Address street not found: Address Field Three is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_THREE_ADDRESS_STREET_NOT_FOUND] addressFieldThree is invalid, address street not found.
+	          * `INVALID_COUNTRY_ADDRESS_STREET_NOT_FOUND` - Address street not found: Country is invalid. For example sample error message will be: [INVALID_COUNTRY_ADDRESS_STREET_NOT_FOUND] country is invalid, address street not found.
+	          * `INVALID_PHONE_NUMBER_INSUFFICIENT_CHARACTERS` - Insufficient characters in phoneNumber. For example sample error message will be: [INVALID_PHONE_NUMBER_INSUFFICIENT_CHARACTERS] Insufficient characters in phoneNumber.
+	          * `INVALID_PHONE_NUMBER_NON_NUMERIC_CHARACTERS` - Non numeric characters in phoneNumber. For example sample error message will be: [INVALID_PHONE_NUMBER_NON_NUMERIC_CHARACTERS] Non numeric characters in phoneNumber.
+	          * `INVALID_ADDRESS_FIELD_ONE_MULTI_BYTE_CHARACTERS` - Multi byte or special characters not allowed in Address Field One. For example sample error message will be: [INVALID_ADDRESS_FIELD_ONE_MULTI_BYTE_CHARACTERS] Multi byte or special characters not allowed in addressFieldOne.
+	          * `INVALID_ADDRESS_FIELD_TWO_MULTI_BYTE_CHARACTERS` - Multi byte or special characters not allowed in Address Field Two. For example sample error message will be: [INVALID_ADDRESS_FIELD_TWO_MULTI_BYTE_CHARACTERS] Multi byte or special characters not allowed in addressFieldTwo.
+	          * `INVALID_ADDRESS_FIELD_THREE_MULTI_BYTE_CHARACTERS` - Multi byte or special characters not allowed in Address Field Three. For example sample error message will be: [INVALID_ADDRESS_FIELD_THREE_MULTI_BYTE_CHARACTERS] dMulti byte or special characters not allowed in addressFieldThree.
+	          * `INVALID_NAME_MULTI_BYTE_CHARACTERS` - Multi byte or special characters not allowed in Access Point Name. For example sample error message will be: [INVALID_NAME_MULTI_BYTE_CHARACTERS] Multi byte or special characters not allowed in accessPointName.
+	          * `INVALID_REGION_MULTI_BYTE_CHARACTERS` - Multi byte or special characters not allowed in Region. For example sample error message will be: [INVALID_REGION_MULTI_BYTE_CHARACTERS] Multi byte or special characters not allowed in region.
+	          * `INVALID_CITY_MULTI_BYTE_CHARACTERS` - Multi byte or special characters not allowed in City. For example sample error message will be: [INVALID_CITY_MULTI_BYTE_CHARACTERS] Multi byte or special characters not allowed in city.
+	          * `INVALID_ADDRESS_FIELD_ONE_DOOR_LEVEL_INFO_MISSING` - District is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_ONE_DOOR_LEVEL_INFO_MISSING] Door level info missing in addressFieldOne.
+	    
 
     Document:
       type: object
