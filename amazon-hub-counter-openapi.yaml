@@ -1542,7 +1542,7 @@ components:
             * `INVALID_CAPABILITIES` - Capabilities are not valid or missing.
             * `INVALID_ADDRESS` - Invalid address. NOTE: Two letter country code is required, address cannot be duplicated.
             * `INVALID_STANDARD_HOURS` - Standard hours for an access point should be as per schema. If not, this error code will be returned. **NOTE**: Opening hours must be earlier than Closing hours.
-            * `INVALID_EXCEPTION_CLOSURES` - Exceptional closures override standard hours. Format of these should be as per the schema. **NOTE**: Initial date must be earlier than final date.
+            * `INVALID_EXCEPTION_CLOSURES` - Exceptional closures override standard hours. Format of these should be as per the schema. **NOTE**: Initial date must be earlier than final date. One exceptional closure must not overlap with another closure.
             * `INVALID_CAPACITY` - This exception code describes one of the following scenario. 1. Threshold Key is absent in the capacity object. [E.g. Error Message: [INVALID_CAPACITY_THRESHOLD] required key [threshold] not found]. 2. Threshold Key value is less than five. [E.g. error messages: [INVALID_CAPACITY_THRESHOLD] <x> is not higher than or equal to five]
             * `INVALID_DAY` - Invalid day format.
             * `INVALID_OPENING_TIME` - Invalid time format. Please check schema for allowed format.
@@ -1612,6 +1612,7 @@ components:
             * `INVALID_REGION_MULTI_BYTE_CHARACTERS` - Multi byte or special characters not allowed in Region. For example sample error message will be: [INVALID_REGION_MULTI_BYTE_CHARACTERS] Multi byte or special characters not allowed in region.
             * `INVALID_CITY_MULTI_BYTE_CHARACTERS` - Multi byte or special characters not allowed in City. For example sample error message will be: [INVALID_CITY_MULTI_BYTE_CHARACTERS] Multi byte or special characters not allowed in city.
             * `INVALID_ADDRESS_FIELD_ONE_DOOR_LEVEL_INFO_MISSING` - District is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_ONE_DOOR_LEVEL_INFO_MISSING] Door level info missing in addressFieldOne.
+            * `INVALID_EXCEPTION_CLOSURES` - One of the exception operating hours overlaps with another exception operating hours
 
     Document:
       type: object
