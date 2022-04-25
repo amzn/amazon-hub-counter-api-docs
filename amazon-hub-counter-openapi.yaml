@@ -169,8 +169,8 @@ info:
     #### Which timezone should we select for country that have 2 timezones?
     For this particular scenario, input hours provided in the feed should be local for opening hours although different timezone should be specified via “timezone” field in the feed.
    
-    #### Which fields are mandatory and which ones are optional? `Applicable only for feedType=3P`
-    For a 3P feed type, the mandatory fields are “accessPointId", "accessPointName", "isActive", "timeZone", "address", "standardHours", "capabilities".  
+    #### Which fields are mandatory? `Applicable only for feedType=3P`
+    For a 3P feed type, the mandatory fields are “accessPointId", "accessPointName", "isActive", "timeZone", "address", "standardHours", "capabilities", "capacity".  
    
     # Appendices
 
@@ -1370,9 +1370,6 @@ components:
           type: string
           example: 'Client authentication failed'
 
-
-  
-
     FeedsRequest:
       type: object
       description: 'Feed containing list of Access Aoints to be processed.'
@@ -1382,6 +1379,8 @@ components:
           description: 'List of partner Access Points to be processed.'
           items:
             $ref: '#/components/schemas/AccessPoint'
+
+    
     FeedsResponse:
       type: object
       properties:
