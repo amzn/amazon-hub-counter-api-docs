@@ -1379,7 +1379,6 @@ components:
           description: 'List of partner Access Points to be processed.'
           items:
             $ref: '#/components/schemas/AccessPoint'
-
     
     FeedsResponse:
       type: object
@@ -1611,7 +1610,36 @@ components:
             * `INVALID_REGION_MULTI_BYTE_CHARACTERS` - Multi byte or special characters not allowed in Region. For example sample error message will be: [INVALID_REGION_MULTI_BYTE_CHARACTERS] Multi byte or special characters not allowed in region.
             * `INVALID_CITY_MULTI_BYTE_CHARACTERS` - Multi byte or special characters not allowed in City. For example sample error message will be: [INVALID_CITY_MULTI_BYTE_CHARACTERS] Multi byte or special characters not allowed in city.
             * `INVALID_ADDRESS_FIELD_ONE_DOOR_LEVEL_INFO_MISSING` - District is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_ONE_DOOR_LEVEL_INFO_MISSING] Door level info missing in addressFieldOne.
-            * `INVALID_EXCEPTION_CLOSURES` - One of the exception operating hours overlaps with another exception operating hours
+            * `INVALID_EXCEPTION_CLOSURES` - Exceptional closures already exist for 30 days or there was an overlap with another closure in the feed.
+      
+    ProcessingWarning:
+      type: object
+      properties:
+        warningCode:
+          type: string
+          example: 'CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_AMAZON'
+          enum:
+            - CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_AMAZON
+            - CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_STORE
+            - CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_AMAZON
+            - CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_STORE
+          description: |
+            A unique warning code to identify the problem. The value will only be present in case of warnings.
+            * `CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_AMAZON` - The requested update on standard hours could not be made because Amazon has already made an update on it.
+            * `CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_STORE` - The requested update on standard hours could not be made because store has already made an update on it.
+            * `CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_AMAZON` - The requested update on some or all exceptional closures could not be made because Amazon has already added those closures.
+            * `CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_STORE` - The requested update on some or all exceptional closures could not be made because store has already added those closures.
+           
+        warningMessage:
+          type: string
+          example: 'CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_AMAZON - Update on standard hours could not be made due to conflicting update by Amazon'
+          description: |
+            The warning message in user-friendly format. 
+            * `CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_AMAZON` - Update on standard hours could not be made due to conflicting update by Amazon.
+            * `CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_STORE` - Update on standard hours could not be made due to conflicting update by Store.
+            * `CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_AMAZON` - Exceptional closures are already applied for dates startDate to endDate by Amazon. Example, Exceptional closures are already applied for dates 2025-05-22 to 2025-05-25 by Amazon.
+            * `CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_STORE` - Exceptional closures are already applied for dates startDate to endDate by Store. Example, Exceptional closures are already applied for dates 2025-05-22 to 2025-05-25 by Store.
+           
 
     Document:
       type: object
@@ -1646,6 +1674,10 @@ components:
           example: 1
           description: 'Total number of Access Points unable to process due to errors.'
           type: integer
+        noOfAccessPointSuccessfullyProcessedWithWarnings:
+          type: integer
+          example: 1
+          description: Total number of Access Points successfully updated with some warnings regarding the updates.
         failedAccessPointProcessingDetails:
           type: array
           description: Detailed list of errors for this feed.
@@ -1674,6 +1706,37 @@ components:
               - indexNumber
               - accesspointId
               - resultStatus
+        warningDetails:
+          type: array
+          description: Detailed list of warnings for the Hub updated without errors but with warnings. These warnings are populated if the feed is requesting a conflicting update. Conflicts arise when another actor (store or Amazon) has performed a blocking update on some fields of the same Hub.
+          items:
+            type: object
+            properties:
+              indexNumber:
+                description: 'Corresponds to index of entry in Input feed.'
+                example: 1
+                type: integer
+              accesspointId: 
+                description: 'Unique Id for the Access Point provided at time of feed submission.'
+                example: 'ACM-0045'
+                type: string
+              resultStatus:
+                description: 'Enum property which dictates the success, failure and warning cases.'
+                example: 'SUCCESS'
+                type: string
+                enum: [SUCCESS, WARNING, FAILURE]
+              warnings:
+                type: array
+                description: 'List of processing warnings and their description.'
+                items:
+                  $ref: '#/components/schemas/ProcessingWarning'
+            required:
+              - indexNumber
+              - accesspointId
+              - resultStatus
+            
+        
+        
       required:
         - feedId
         - noOfAccessPointsProcessed
