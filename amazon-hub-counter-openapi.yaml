@@ -1677,10 +1677,6 @@ components:
           example: 1
           description: 'Total number of Access Points unable to process due to errors.'
           type: integer
-        noOfAccessPointSuccessfullyProcessedWithWarnings:
-          type: integer
-          example: 1
-          description: Total number of Access Points successfully updated with some warnings regarding the updates.
         failedAccessPointProcessingDetails:
           type: array
           description: Detailed list of errors for this feed.
