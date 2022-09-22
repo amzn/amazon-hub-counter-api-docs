@@ -1623,15 +1623,13 @@ components:
             - CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_STORE
             - CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_AMAZON
             - CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_STORE
-            - GEOCODE_NOT_UPDATED
           description: |
             A unique warning code to identify the problem. The value will only be present in case of warnings.
             * `CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_AMAZON` - The requested update on standard hours could not be made because Amazon has already made an update on it.
             * `CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_STORE` - The requested update on standard hours could not be made because store has already made an update on it.
             * `CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_AMAZON` - The requested update on some or all exceptional closures could not be made because Amazon has already added those closures.
             * `CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_STORE` - The requested update on some or all exceptional closures could not be made because store has already added those closures.
-            * `GEOCODE_NOT_UPDATED` - The updated geocodes were ignored, since there was no change in the address.
-    
+            
         warningMessage:
           type: string
           example: 'CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_AMAZON - Update on standard hours could not be made due to conflicting update by Amazon'
@@ -1641,9 +1639,7 @@ components:
             * `CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_STORE` - Update on standard hours could not be made due to conflicting update by Store.
             * `CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_AMAZON` - Exceptional closures are already applied for dates startDate to endDate by Amazon. Example, Exceptional closures are already applied for dates 2025-05-22 to 2025-05-25 by Amazon.
             * `CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_STORE` - Exceptional closures are already applied for dates startDate to endDate by Store. Example, Exceptional closures are already applied for dates 2025-05-22 to 2025-05-25 by Store.
-            * `GEOCODE_NOT_UPDATED` - Geocodes (latitude and longitude) cannot be updated for the store because there is no change in Address.
-           
-
+              
     Document:
       type: object
       properties:
