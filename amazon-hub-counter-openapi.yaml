@@ -1587,6 +1587,7 @@ components:
             * `INVALID_THRESHOLD` - Capacity threshold is invalid.
             * `ADDRESS_ALREADY_EXISTS_FOR_A_STORE` - Error occurred while creation or updation of store. Address provided for the access point is already mapped to another store.
             * `UNABLE_TO_UPDATE_TERMINATED_STORE` - The store is terminated and hence not updatable.
+            
     ProcessingNotification:
       type: object
       properties:
