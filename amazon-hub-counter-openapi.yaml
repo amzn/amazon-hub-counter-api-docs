@@ -1530,56 +1530,22 @@ components:
             - MISSING_LOGIN_CLAIM
             - LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE
             - UNABLE_TO_PROCESS_LOGIN_CLAIM
-          description: |
-            A unique error code to identify the problem. The value will only be present in case of failure.
-            * `INVALID_ACCESS_POINT_ID` - Access point Id is not valid or missing. Sample error message: [INVALID_ACCESS_POINT_ID] required key [accessPointId] not found.
-            * `INVALID_ACCESS_POINT_NAME` - Access point name is not valid or missing. Sample error message: [INVALID_ACCESS_POINT_NAME] required key [accessPointName] not found.
-            * `INVALID_ACTIVE_FLAG` - isActive Flag is not valid or missing. For example sample error message will be: [INVALID_ACTIVE_FLAG] required key [isActive] not found.
-            * `INVALID_TIMEZONE` - TimeZone is not valid or missing. For example sample error message will be: [INVALID_TIMEZONE] TimeZone is not valid.
-            * `INVALID_TERMINATION_DATE` - Termination is not valid or missing.
-            * `INVALID_CAPABILITIES` - Capabilities are not valid or missing.
-            * `INVALID_ADDRESS` - Invalid address. NOTE: Two letter country code is required, address cannot be duplicated.
-            * `INVALID_STANDARD_HOURS` - Standard hours for an access point should be as per schema. If not, this error code will be returned. **NOTE**: Opening hours must be earlier than Closing hours.
-            * `INVALID_EXCEPTION_CLOSURES` - Exceptional closures override standard hours. Format of these should be as per the schema. **NOTE**: Initial date must be earlier than final date. One exceptional closure must not overlap with another closure.
-            * `INVALID_CAPACITY` - This exception code describes one of the following scenario. 1. Threshold Key is absent in the capacity object. [E.g. Error Message: [INVALID_CAPACITY_THRESHOLD] required key [threshold] not found]. 2. Threshold Key value is less than five. [E.g. error messages: [INVALID_CAPACITY_THRESHOLD] <x> is not higher than or equal to five]
-            * `INVALID_DAY` - Invalid day format.
-            * `INVALID_OPENING_TIME` - Invalid time format. Please check schema for allowed format.
-            * `INVALID_CLOSING_TIME`
-            * `INVALID_START_TIME`
-            * `INVALID_END_TIME`
-            * `INVALID_START_DATE_TIME`
-            * `INVALID_END_DATE_TIME`
-            * `INVALID_MID_DAY_CLOSURES` - MidDay closures should be as per the schema, otherwise this error code will be returned. Opening and closing time should be such that opening time is before closing time.
-            * `INVALID_COMMUNICATION_DETAILS` - Returned in case schema is not followed for a given input.
-            * `INVALID_EMAIL_ID`
-            * `INVALID_PHONE_NUMBER`
-            * `INVALID_COUNTRY_CODE`
-            * `INVALID_LATITUDE`
-            * `INVALID_LONGITUDE`
-            * `INVALID_CITY`
-            * `INVALID_ADDRESS_FIELD_ONE`
-            * `DUPLICATE_STORE_ENTRY` - A given access point entry is duplicated based on its id. Sample error message: [DUPLICATE_STORE_ENTRY] This is a duplicate store entry, index occurrences are: [1, 2]
-            * `INVALID_ISACTIVE_FLAG_STATE` - isActive flag value has not expected value. For example, to create an access point isActive flag value has to be true. Sample error message: [INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.
-            * `INVALID_STORE_STATE` - This error code indicates that store is not in a valid state to perform certain operation. For example, a store cannot be marked as active or inactive if it exists in planned state. Sample error message: [INVALID_STORE_STATE] Store is in planned state, cannot be updated to active or inactive state.
-            * `STORE_CREATION_FAILURE` - If the error message contains error sub code related to invalid address, it denotes bad input provided by client that can be fixed by client themselves. For all other usecases, it denotes failure in Amazon services, please report this error to Amazon and retry.
-            * `STORE_UPDATION_FAILURE` - If the error message contains error sub code related to invalid address, it denotes bad input provided by client that can be fixed by client themselves. For all other usecases, it denotes failure in Amazon services, please report this error to Amazon and retry.
-            * `UNABLE_TO_UPDATE_STORE_STATUS`
-            * `UNABLE_TO_UPDATE_STORE_CAPABILITY`
-            * `UNABLE_TO_UPDATE_STORE_CAPABILITY_STATUS`
-            * `UNABLE_TO_UPDATE_CAPACITY`
-            * `UNABLE_TO_UPDATE_CLIENT_REF` - This error indicates that given accessPointId is not updated for a given store. Sample message will be: [UNABLE_TO_UPDATE_CLIENT_REF] Unable to update accessPointId for created store accessPointId1
-            * `DUPLICATE_LOGIN_CLAIM_ENTRY` - This error code indicates that a given login claim entry is duplicated based on its value. Sample error message: [DUPLICATE_LOGIN_CLAIM_ENTRY] This is a duplicate login claim entry, index occurrences are: [1, 2]
-            * `INVALID_LOGIN_CLAIM` - This error code indicates that given login claim does not adhere to a valid email in RFC 5322 format or valid phone number in E164 format. Sample error message: [INVALID_LOGIN_CLAIM] Login claim is not valid. Phone number should be in international or E164 format and email in RFC 5322 format
-            * `MISSING_LOGIN_CLAIM` - This error code is applicable for clients approved for login claim flow. It indicates that either the login claim was not provided while onboarding a new store or login claim was not provided for an existing store already associated with some login claim. Sample error message: [MISSING_LOGIN_CLAIM] This is a required field when onboarding a new store or when updating the store already associated with a login claim.
-            * `LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE` - This error code indicates the login claim cannot be used for current store as it is already being used for a different store, please use a different login claim to register. Sample error message: [LOGIN_CLAIM_ALREADY_MAPPED_TO_STORE] There is already a store associated with this login claim. Please use a different login claim to register.
-            * `UNABLE_TO_PROCESS_LOGIN_CLAIM` - This error code indicates the login claim was not processed successfully due to failure in Amazon services, please report it to Amazon and retry. Sample error message: [UNABLE_TO_PROCESS_LOGIN_CLAIM] There was an error processing the login claim. Please try again or contact Amazon Hub Representative if error persists.
-       
+            - INVALID_INPUT_FEED
+            - DEPENDENCY_FAILURE
+            - INVALID_RESTRICTED_ACCESS_FLAG
+            - INVALID_GEOCODE_PAIR
+            - UNKNOWN_FIELD
+            - UNABLE_TO_FETCH_AP_INFO
+            - UNABLE_TO_UPLOAD_RESPONSE_DOCUMENT
+            - INVALID_THRESHOLD
+            - ADDRESS_ALREADY_EXISTS_FOR_A_STORE
+            - UNABLE_TO_UPDATE_TERMINATED_STORE
+
         errorMessage:
           type: string
           example: '[INVALID_ISACTIVE_FLAG_STATE] Store isActive flag should be set as true for new creation.'
           description: |
-            The error message in user-friendly format. Error message consists of two parts - error sub code and error message. Error sub code is enclosed in square brackets i.e. [].
-            For invalid address use cases that fall under STORE_CREATION_FAILURE or STORE_UPDATION_FAILURE, the following error subcodes can be present in the error message. These errors are due to the bad input provided by the clients and clients should be able to fix these by themselves.
+            The error message in user-friendly format.
             * `MISSING_REGION` - Region is empty or missing from address. Sample error message: [MISSING_REGION] region is empty or missing from address.
             * `MISSING_DISTRICT` - District is empty or missing from address. Sample error message: [MISSING_DISTRICT] district is empty or missing from address.
             * `INVALID_ADDRESS_FIELD_ONE` - Address Field One is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_ONE] addressFieldOne is invalid.
@@ -1611,7 +1577,16 @@ components:
             * `INVALID_CITY_MULTI_BYTE_CHARACTERS` - Multi byte or special characters not allowed in City. For example sample error message will be: [INVALID_CITY_MULTI_BYTE_CHARACTERS] Multi byte or special characters not allowed in city.
             * `INVALID_ADDRESS_FIELD_ONE_DOOR_LEVEL_INFO_MISSING` - District is invalid. For example sample error message will be: [INVALID_ADDRESS_FIELD_ONE_DOOR_LEVEL_INFO_MISSING] Door level info missing in addressFieldOne.
             * `INVALID_EXCEPTION_CLOSURES` - Exceptional closures already exist for 30 days or there was an overlap with another closure in the feed.
-      
+            * `INVALID_INPUT_FEED` - Feed data is in invalid JSON format.
+            * `DEPENDENCY_FAILURE` - Error occured while fetching partner details from dependency.
+            * `INVALID_RESTRICTED_ACCESS_FLAG` - isRestrictedAccess flag is not valid.
+            * `INVALID_GEOCODE_PAIR` - Latitude and longitude pair is invalid.
+            * `UNKNOWN_FIELD` - Unknown invalid field in the input feed.
+            * `UNABLE_TO_FETCH_AP_INFO` - Unable to fetch access point information from downstream dependency.
+            * `UNABLE_TO_UPLOAD_RESPONSE_DOCUMENT` - Failed to save the output document.
+            * `INVALID_THRESHOLD` - Capacity threshold is invalid.
+            * `ADDRESS_ALREADY_EXISTS_FOR_A_STORE` - Error occurred while creation or updation of store. Address provided for the access point is already mapped to another store.
+            * `UNABLE_TO_UPDATE_TERMINATED_STORE` - The store is terminated and hence not updatable.
     ProcessingNotification:
       type: object
       properties:
@@ -1623,13 +1598,7 @@ components:
             - CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_STORE
             - CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_AMAZON
             - CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_STORE
-          description: |
-            A unique notification code to identify the problem. The value will only be present in case of notifications.
-            * `CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_AMAZON` - The requested update on standard hours could not be made because Amazon has already made an update on it.
-            * `CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_STORE` - The requested update on standard hours could not be made because store has already made an update on it.
-            * `CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_AMAZON` - The requested update on some or all exceptional closures could not be made because Amazon has already added those closures.
-            * `CONFLICTING_UPDATE_ON_EXCEPTIONAL_CLOSURES_BY_STORE` - The requested update on some or all exceptional closures could not be made because store has already added those closures.
-            
+
         notificationMessage:
           type: string
           example: 'CONFLICTING_UPDATE_ON_STANDARD_HOURS_BY_AMAZON - Update on standard hours could not be made due to conflicting update by Amazon'
