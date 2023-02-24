@@ -1,10 +1,10 @@
 openapi: 3.0.0
 info:
-  title: 'Amazon Counter API'
+  title: 'Amazon Store Feed API'
   description: |
-    Amazon's API for creating and updating Amazon Counter Access Points. 
+    Amazon's API for creating and updating Amazon Access Points. 
     
-    This guide is intended for Amazon Counter partners who wish to integrate with the Access Points Onboarding API. This API enables partners to programmatically create, update and disable locations in Amazon systems.
+    This guide is intended for Amazon Store Feed partners who wish to integrate with the Access Points Onboarding API. This API enables partners to programmatically create, update and disable locations in Amazon systems.
     
     Throughout this guide, partner developers can learn how to:
     1. Create a developer account and security profile to access relevant API environments.
