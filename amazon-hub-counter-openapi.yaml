@@ -1,10 +1,10 @@
 openapi: 3.0.0
 info:
-  title: 'Amazon Hub Counter API'
+  title: 'Amazon Store Feed API'
   description: |
-    Amazon's API for creating and updating Amazon Hub Counter Access Points. 
+    Amazon's API for creating and updating Amazon Access Points. 
     
-    This guide is intended for Amazon Hub Counter partners who wish to integrate with the Access Points Onboarding API. This API enables partners to programmatically create, update and disable locations in Amazon systems.
+    This guide is intended for Amazon Store Feed partners who wish to integrate with the Access Points Onboarding API. This API enables partners to programmatically create, update and disable locations in Amazon systems.
     
     Throughout this guide, partner developers can learn how to:
     1. Create a developer account and security profile to access relevant API environments.
@@ -283,7 +283,7 @@ info:
                 <td>
                   <code>
                   { <br/>
-                    &nbsp;&nbsp;&nbsp; "message": "[DATA_CONFIGURATION_ERROR] There is some configuration issue. Please contact Amazon Hub representative." <br/>
+                    &nbsp;&nbsp;&nbsp; "message": "[DATA_CONFIGURATION_ERROR] There is some configuration issue. Please contact Amazon representative." <br/>
                     &nbsp;&nbsp;&nbsp; "retryable": "false" <br/>
                   } <br/>
                   </code>
@@ -837,7 +837,7 @@ paths:
           name: feedType
           description: |
             Specifies the type of feed to be submitted.
-            * For Amazon Hub Counter access points use the value `STORE_FEED`.
+            * For Amazon Counter access points use the value `STORE_FEED`.
             * For third party pick-up points use the value `3P`.
           schema:
             type: string
@@ -1030,18 +1030,18 @@ components:
             Using this format for store IDs will make quality reporting with Amazon much more efficient as it is easier to identify individual stores.
         accessPointName:
           type: string
-          example: 'Amazon Hub Counter - Acme Manchester'
+          example: 'Amazon Counter - Acme Manchester'
           maximum: 50
           description: |
-            Customer-facing business name for location, prepended by the fixed string `Amazon Hub Counter - `. 
+            Customer-facing business name for location, prepended by the fixed string `Amazon Counter - `. 
             
             If location descriptor is used to differentiate store chains, add it after the store name. 
             
-            For example: `Amazon Hub Counter - Acme Manchester`. 
+            For example: `Amazon Counter - Acme Manchester`. 
             
-            There is a 50-character limit for this field - therefore 29 characters available following `Amazon Hub Counter - ` to provide location business name and descriptor.
+            There is a 50-character limit for this field - therefore 29 characters available following `Amazon Counter - ` to provide location business name and descriptor.
 
-            > **NOTE**: If this is a third party pick-up point the `Amazon Hub Counter - ` prefix does not apply.
+            > **NOTE**: If this is a third party pick-up point the `Amazon Counter - ` prefix does not apply.
         loginClaim:
           type: string
           example: 'store123@companydomain.com or +447999999123'
@@ -1050,7 +1050,7 @@ components:
 
             Email loginClaim must only be provided in RFC 5322 format and phone loginClaim must be provided in international format, preferably E164; beginning with + and country code. E.g. email: store123@companydomain.com, phone: +447999999123. Please note that loginClaim is case insensitive and email loginClaims such as abc@xyz.com will be treated same as ABC@xyz.com. Similarly, phone numbers such as +447999999123 and +44(7999)-999123 will be treated as same.
        
-            loginClaim is honoured only for approved clients. For unapproved clients, the field is ignored even if sent in the feed. Please contact your Amazon Hub Representative to check if you are approved for using this field.
+            loginClaim is honoured only for approved clients. For unapproved clients, the field is ignored even if sent in the feed. Please contact your Amazon Representative to check if you are approved for using this field.
 
             loginClaim is not mandatory for existing stores that were onboarded without loginClaims, but is mandatory for any new stores of approved clients and stores which are already associated to some loginClaims in Amazon systems.
 
@@ -1102,7 +1102,7 @@ components:
         communicationDetails:
           type: object
           description: |
-            Access Point contact details - mandatory for Amazon Hub Counter locations which are not using loginClaim field as store registration email is sent to the *emailId* specified here.
+            Access Point contact details - mandatory for Amazon Counter locations which are not using loginClaim field as store registration email is sent to the *emailId* specified here.
 
             This field is optional for stores onboarded with loginClaim, who will receive location activation notification via either email or SMS depending upon the channel provided in communication details. Email takes precedence over SMS in case both are provided. In case no communication details are provided, notification will be sent on email or phone that was provided in the login claim field.
 
@@ -1587,7 +1587,6 @@ components:
             * `INVALID_THRESHOLD` - Capacity threshold is invalid.
             * `ADDRESS_ALREADY_EXISTS_FOR_A_STORE` - Error occurred while creation or updation of store. Address provided for the access point is already mapped to another store.
             * `UNABLE_TO_UPDATE_TERMINATED_STORE` - The store is terminated and hence not updatable.
-            
     ProcessingNotification:
       type: object
       properties:
@@ -1673,7 +1672,7 @@ components:
               - resultStatus
         notificationDetails:
           type: array
-          description: Detailed list of notifications for the Hub updated without errors but with notifications. These notifications are populated if the feed is requesting a conflicting update. Conflicts arise when another actor (store or Amazon) has performed a blocking update on some fields of the same Hub.
+          description: Detailed list of notifications for the updated without errors but with notifications. These notifications are populated if the feed is requesting a conflicting update. Conflicts arise when another actor (store or Amazon) has performed a blocking update on some fields of the same Hub.
           items:
             type: object
             properties:
