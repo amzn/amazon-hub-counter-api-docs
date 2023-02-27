@@ -760,7 +760,7 @@ info:
     | +14:00  |    Etc/GMT-14 |
     | +14:00  |    Pacific/Kiritimati |
 
-  version: '1.0.0'
+  version: '1.0.1'
 servers:
   - url: https://accesspoints-api-sandbox-na.amazon.com/v1
     description: 'NA staging server for testing'
