@@ -13,6 +13,114 @@ info:
 
     In the scope of this document we will refer to partner locations also as Access Point locations.
 
+    # Integration guide steps
+    The Amazon API Store Feed is how Amazon is able to surface our PARP partner locations for our customers to select. The data must be transmitted on a daily basis to Amazon in order to maintain accurate information on our site. 
+    The information pushed to Amazon through this integration will be immediately surfaced to our customers through the Location Selector, therefore ensuring alignment on naming conventions and correct use of fields is vital to launching 
+    a new pickup point service with Amazon. 
+    See below an example of the Location Selector for Belgium and what the customer sees:
+
+    > ![Security Profile Management](assets/security_profiles_5.png)
+    > *Figure 1 - Example Location Selector for Belgium*
+
+    <br><br>
+
+    ### What are we going to find in there? 
+    The following steps is showing what we expect from this integration in order to cover the differents requirement to ensure the operational ability between both systems.
+    ## Step 1: API requirements
+    The Amazon Partner Integration Manager (PIM) team will guide the partner through the integration requirement and steps to enable the partner to scope the level of effort to complete the ask.
+    The documents are as follows:
+
+      1. [Amazon Store Feed API](https://amzn.github.io/amazon-hub-counter-api-docs/) online technical documentation (this document). This technical documentation provides a comprehensive list of the requirements, limitations and formats we expect the partner to follow during the API Store feed integrate.
+      2. Amazon Store Feed Business cases (in annex below on this document): Operational documentation for the partner tech team to understand the actions that they should be able to cover once the Store Feed API integration is completed 
+      in order to maintain and expand the network, whilst preserving and continuously improving the CX and quality.
+
+
+    ## Step 2: Technical documentation review
+    Once the partner tech team has fully read the documentation provided by the PIM team, Amazon and partner tech team will align through a dedicated session to answer initial questions prior to the partner tech team finalizing their scoping.
+
+
+    ## Step 3: Connection information sharing
+    The partner will send the PIM 2 items in order to proceed with the integration:
+
+      1. Client ID: Generated on the developer portal as outlined on the link for [Developper Account Registration Process](https://amzn.github.io/amazon-hub-counter-api-docs/#section/Developer-Account-Registration-Process) within the online technical documentation (non personal e-mail).
+      2. The administrative email used for the partner ops team which must have been registered in the [Amazon portal](https://www.amazon.com/ap/register?showRememberMe=true&openid.pape.max_auth_age=0&pageId=usflex&ignoreAuthState=1&mobileBrowserWeblabTreatment=C&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fap%2Fsignin%3Fopenid.pape.max_auth_age%3D900%26openid.return_to%3Dhttps%253A%252F%252Fwww.amazon.com%252Fgp%252Fyourstore%252Fhome%253Fpath%253D%25252Fgp%25252Fyourstore%25252Fhome%2526signIn%253D1%2526useRedirectOnSuccess%253D1%2526action%253Dsign-out%2526ref_%253Dnav_AccountFlyout_signout%26openid.assoc_handle%3Dusflex%26openid.mode%3Dcheckid_setup%26openid.ns%3Dhttp%253A%252F%252Fspecs.openid.net%252Fauth%252F2.0&prevRID=ZXD0GCBBKPXS6E0T4CTQ&openid.assoc_handle=usflex&openid.mode=checkid_setup&desktopBrowserWeblabTreatment=C&prepopulatedLoginId=&failedSignInCount=0&ref_=ap_sw_aa&disableLoginPrepopulate=1&switch_account=signin&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0) (non personal e-mail).
+
+    Note that there is a differentiation between the Tech Accounts and the administrative e-mail accounts,
+    which require different emails for security reasons. These accounts must be created through
+    generic admin emails (not personal emails) to avoid future credential issues. They each require
+    an unique phone number for verification purposes. We propose that the partner procures SIM
+    cards for each of their tech accounts and administrative accounts. Note that if you are launching a
+    locker and counter network, you will need to create two separate Client Ids but can use the
+    same Tech Account, see below illustration.
+
+    <br><br>
+
+    > ![Security Profile Management](assets/security_profiles_6.png)
+        <br><br>
+    > *Figure 2 - 3P Tech Account - Administrative Accounts mapping*
+
+    <br><br>
+
+
+    > ![Security Profile Management](assets/security_profiles_7.png) 
+        <br><br>
+    > *Figure 3 - 1P Tech Account - Administrative Account mapping*
+
+    ## Step 4: Connection tests
+    Once the integration is complete, the partner will send an API call to verify the connectivity
+    with the Amazon Store Feed system. The partner will complete the following:
+
+      1. Send authentication call to fetch the API token
+      2. Send a basic feed information to the Store Feed API - example provided on 'Create a Feed Section'.
+      3. Retrieve the feed id
+      4. Retrieve the output document
+
+    ## Step 5: Business cases
+  
+    Once the partner confirms the connection is completed and the calls above are covered, the partner tech team will review the business cases document to have clear the scenarios to be tested on the implementation done. 
+    If there is any additional business tests required for your marketplace, this will be communicated to you by the PIM. The partner tech team will complete the business cases (see [APPENDIX III - Business cases to be covered](https://amzn.github.io/amazon-hub-counter-api-docs/#section/Appendices/APPENDIX-III-Business-cases-to-be-covered) ) and share information following this format to provide
+    Amazon the evidence needed that the integration has been successfully completed following the requirements:
+
+    <table>
+        <thead>
+            <tr>
+                <th>Business case</th>
+                <th>Feed Id</th>
+                <th>Output</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Create a single store using an API call</td>
+                <td>30cd3ea3-5a37-4f4f-8eff-df319caf3433</td>
+                <td>\"noOfAccessPointsProcessed\" : 1,\n  \"noOfAccessPointsSuccessfullyProcessed\" : 1,\n  \"noOfAccessPointsFailedToProcess\" : 0,\n</td>
+            </tr>
+            <tr>
+                <td>Create a bulk of stores using an API call</td>
+                <td>30cd3ea3-5a37-4f4f-8eff-df319caf3433</td>
+                <td>\"noOfAccessPointsProcessed\" : 3000,\n  \"noOfAccessPointsSuccessfullyProcessed\" : 3000,\n  \"noOfAccessPointsFailedToProcess\" : 0,\n</td>
+            </tr>
+          
+
+    In case the tests are accomplishing the quality bar in terms of data and functionality, the PIM
+    will provide green light to the production migration, otherwise partner tech team will have to
+    iterate until the tests are green.
+
+    > *Figure 4 - Table format expected with two examples of the business cases requested*
+
+
+    ## Step 6: Partner production enabling
+
+    On the last integration phase, the PIM will perform the production configuration to allow the
+    partner to make calls on the production environment, note that this does not mean that the
+    locations are yet discoverable by the customers. Prior to moving towards a full daily push of
+    stores, we will ask the partner to send a controlled number of stores (ideally less than 10% of
+    network) to ensure that the data is flowing as expected on production environment. Once this
+    is complete, the partner will then start sending daily pushes throughout the UAT process to
+    ensure that the calls are following Amazon’s expectations. The PIM will monitor this closely
+    throughout UAT.
+
+
     # Developer Account Registration Process
     A security profile must be created to access the Access Points API: Register as an Amazon developer on https://developer.amazon.com/ to create a security profile.
     > **NOTE**: The email used for this account should be one dedicated for this purpose (e.g. amazon-pickup@corpdomain.com).
@@ -100,9 +208,12 @@ info:
     
     #### How do I create an exceptional closure starting from now and finishing some time in the future?
     You cannot use the current date for the exceptionalClosure startDateTime property as it will fail the validation, it has to be some time in the future. Consider if deactivating the location is not a best option for your use case.
+
+    #### When should we use exceptional closures and when to deactivate a store?
+    When the store needs to be closed for more than 7 days, the store should be deactivated. For less than 7 days, temporary closures should be used.
     
-    #### Are previously sent exceptional closures stored?
-    No, you need to submit every future exceptional closure on each feed update. If you don't send the update again, the previously created ones will be delete as they are overwritten on every update.
+    #### Is there a limit on the exceptional closures I can submit?
+    Yes, there is a buffer limit to ensure the good practice and usage of the functionality. If you send in total more than 30 active exceptional closure, the APi will report a message alerting it and the store will be reported as an error. 
     
     #### Are there any requirements for the format of the latitude and longitude properties?
     We support positive and negative digits and `.` (dot) as the decimal separator. The values must always be to 6 decimal places, ranging from -90 to 90 for latitude and -180 to 180 for longitude. The combination of 0,0 for both latitude and longitude will throw an error. 
@@ -156,9 +267,6 @@ info:
 
     #### Do we need a developer email address only used for this specific purpose? 
     We strongly suggest to use an specific email for this to avoid access problems in the future with personal emails. 
-   
-    #### When should we use exceptional closures and when to deactivate a store?
-    When the store needs to be closed for more than 3 days, the store should be deactivated. For less than 3 days, temporary closures should be used.
    
     #### Can stores be created with the same address but with a different store name?
     Yes, but they need to have different store name. It is taken into account for identifying the store.
@@ -760,7 +868,73 @@ info:
     | +14:00  |    Etc/GMT-14 |
     | +14:00  |    Pacific/Kiritimati |
 
-  version: '1.1.1'
+    ## APPENDIX III - Business cases to be covered
+
+    ### Authentication:
+    Generating tokens with the production Client id provided under the developer portal profile in
+    combination with the secret.
+
+    ### Single store:
+      - Create a single store using an API call
+      - Inactivate / activate a single store using an API call
+      - Update a single store information using an API call:
+        - Store name
+        - Store address fields
+        - Store opening and closing hours
+        - Store capacity
+        - Store capability
+      - Add exceptional closures for a single store using an API call
+
+
+    ### Bulk of stores:
+    - Read carefully the following steps upfront the integration to ensure you are sending the expected data:
+      - Feed_type = STORE_FEED → SENDING ONLY DELTAS of the total store network which have a change in any of the parameters.
+      - Feed_type = 3P → SENDING THE ENTIRE (bulk) network of pick up points
+    - Create a bulk of stores using an API call
+    - Inactivate / activate a bulk of stores using an API call
+    - Update a bulk of stores with different information combined using an API call:
+      - Store name
+      - Store address fields
+      - Store opening and closing hours
+      - Store capacity
+      - Store capability
+    - Add exceptional closures for a bulk of stores using an API call
+
+
+    ## APPENDIX IV - Tests to be completed on sandbox
+
+    ### Successful responses:
+    
+    The following test must be performed for both business cases, single and bulk store before proceeding with the moving to production environment:
+      - Store creation, expected result: Store processed and visible on Amazon back-end.
+      - Store update, expected result: Store update changes visible on Amazon back-end.
+      - Store inactivation, expected result: Store status updated and visible on Amazon back-end.
+      - Store temporary closed, expected result: Store status updated and visible on Amazon back-end.
+    
+    All these responses are available and must be checked on partner side with the API function of retrieve an output document which contains the call response.
+
+    ### Error control:
+
+    The following test must be performed for both business cases, single and bulk store before proceeding with the moving to production environment. 
+    All the errors reported on the API online documentation shared with the partner provides visibility on what is wrong with the feed or with a specific location. 
+    The integration must be able to read the output of the call and provide the operator the ability to fix the location to re-submit the call with the data fixed.
+      - Store creation with wrong flag status
+      - Store update with wrong standard hours:
+        - Sending less than two opening days on a week
+      - Store update with wrong opening hours:
+        - Data and time format
+      - Store update with wrong exceptional closure hours:
+        - Date in the past
+        - Overlapping date ranges
+      - Data truncation due to allowed length exceeded (e.g. accessPointName > 50 characters)
+      - Timezone and Country Code ISO values validation
+    
+    For all the cases above mentioned, there is an error code and error description published on the output document. 
+    Those errors are collected and mentioned on the API Online Documentation under _Return a document call_
+
+
+
+  version: '1.2.0'
 servers:
   - url: https://accesspoints-api-sandbox-na.amazon.com/v1
     description: 'NA staging server for testing'
@@ -1267,52 +1441,17 @@ components:
           description: 'Array containing location standard opening hours.'
           minItems: 2
           items:
-            type: object
-            properties:
-              day:
-                type: string
-                example: 'MONDAY'
-                description: |
-                  Day of the week for opening hours’ entry.
+            - $ref: '#/components/schemas/StandardHoursOne'
+            - $ref: '#/components/schemas/StandardHoursTwo'
 
-                  E.g. `MONDAY`
-                enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
-              openingTime:
-                type: string
-                example: '08:00:00'
-                description: |
-                  Access Point opening time in the format HH:MM:SS
-
-                  E.g. `08:00:00`
-
-                  * If store is 24 hours, please set it to `00:00:00`
-                pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
-              closingTime:
-                type: string
-                example: '22:00:00'
-                description: |
-                  Access Point closing time in the format HH:MM:SS
-
-                  E.g. `22:00:00`
-
-                  * If store is 24 hours, please set it to `23:59:59`
-                pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
-              midDayClosures:
-                type: array
-                description: 'Array for midday closures during any operating day.'
-                minItems: 1
-                items:
-                  $ref: '#/components/schemas/MidDayClosure'
-            required:
-              - day
-              - openingTime
-              - closingTime
         exceptionalClosures:
           type: array
           description: 'List with exceptional closures for Access Point. Minimum unit of exceptional closure is one day.'
-          minItems: 1
+          minItems: 2
           items:
-            $ref: '#/components/schemas/ExceptionalClosure'
+            - $ref: '#/components/schemas/ExceptionalClosureOne'
+            - $ref: '#/components/schemas/ExceptionalClosureTwo'
+
       required:
         - accessPointId
         - accessPointName
@@ -1439,24 +1578,121 @@ components:
         - startTime
         - endTime
 
-    ExceptionalClosure:
+    StandardHoursOne:
+      type: object
+      properties:
+        day:
+          type: string
+          example: 'MONDAY'
+          description: |
+            Day of the week for opening hours’ entry.
+            E.g. `MONDAY`
+          enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+        openingTime:
+          type: string
+          example: '08:00:00'
+          description: |
+            Access Point opening time in the format HH:MM:SS
+            E.g. `08:00:00`
+            * If store is 24 hours, please set it to `00:00:00`
+          pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
+        closingTime:
+          type: string
+          example: '22:00:00'
+          description: |
+            Access Point closing time in the format HH:MM:SS
+            E.g. `22:00:00`
+            * If store is 24 hours, please set it to `23:59:59`
+          pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
+        midDayClosures:
+          type: array
+          description: 'Array for midday closures during any operating day.'
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/MidDayClosure'
+      required:
+        - day
+        - openingTime
+        - closingTime
+
+    StandardHoursTwo:
+      type: object
+      properties:
+        day:
+          type: string
+          example: 'TUESDAY'
+          description: |
+            Day of the week for opening hours’ entry.
+            E.g. `TUESDAY`
+          enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+        openingTime:
+          type: string
+          example: '09:00:00'
+          description: |
+            Access Point opening time in the format HH:MM:SS
+            E.g. `09:00:00`
+            * If store is 24 hours, please set it to `00:00:00`
+          pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
+        closingTime:
+          type: string
+          example: '20:00:00'
+          description: |
+            Access Point closing time in the format HH:MM:SS
+            E.g. `20:00:00`
+            * If store is 24 hours, please set it to `23:59:59`
+          pattern: '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
+        midDayClosures:
+          type: array
+          description: 'Array for midday closures during any operating day.'
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/MidDayClosure'
+      required:
+        - day
+        - openingTime
+        - closingTime
+
+    ExceptionalClosureOne:
       type: object
       properties:
         startDateTime:
           type: string
-          example: '2018-06-30'
+          example: '2023-06-30'
           description: |
             Exceptional closure start date in the format `YYYY-MM-DD`
 
-            E.g. `2018-06-30`
+            E.g. `2023-06-30`
           pattern: '^(20[1-9][0-9])-(0[0-9]|1[0-2])-(0[1-9]|([12][0-9]|3[01]))(T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?$'
         endDateTime:
           type: string
-          example: '2018-07-10'
+          example: '2023-07-10'
           description: |
             Exceptional closure end date in the format `YYYY-MM-DD`
 
-            E.g. `2018-07-10`
+            E.g. `2023-07-10`
+          pattern: '^(20[1-9][0-9])-(0[0-9]|1[0-2])-(0[1-9]|([12][0-9]|3[01]))(T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?$'
+      required:
+        - startDateTime
+        - endDateTime
+    
+    ExceptionalClosureTwo:
+      type: object
+      properties:
+        startDateTime:
+          type: string
+          example: '2023-06-30'
+          description: |
+            Exceptional closure start date in the format `YYYY-MM-DD`
+
+            E.g. `2023-06-30`
+          pattern: '^(20[1-9][0-9])-(0[0-9]|1[0-2])-(0[1-9]|([12][0-9]|3[01]))(T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?$'
+        endDateTime:
+          type: string
+          example: '2023-07-10'
+          description: |
+            Exceptional closure end date in the format `YYYY-MM-DD`
+
+            E.g. `2023-07-10`
           pattern: '^(20[1-9][0-9])-(0[0-9]|1[0-2])-(0[1-9]|([12][0-9]|3[01]))(T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?$'
       required:
         - startDateTime
@@ -1520,7 +1756,6 @@ components:
             - UNABLE_TO_UPDATE_STORE_CAPABILITY
             - DATA_CONFIGURATION_ERROR
             - STORE_UPDATION_FAILURE
-            - FAILURE
             - UNABLE_TO_UPLOAD_RESPONSE_DOCUMENT
             - INVALID_STORE_STATE
             - INVALID_CAPACITY
