@@ -1207,7 +1207,7 @@ components:
           example: 'Amazon Counter - Acme Manchester'
           maximum: 50
           description: |
-            Customer-facing business name for location, prepended by the fixed string `Amazon Counter - `. 
+            Customer-facing business name for location, prepended by the fixed string `Amazon Counter - ` or `Amazon カウンター -` for JP. 
             
             If location descriptor is used to differentiate store chains, add it after the store name. 
             
