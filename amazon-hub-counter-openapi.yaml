@@ -158,7 +158,7 @@ info:
 
 
     ### Submitting Client IDs to Amazon
-    If the Partner is located in North America or Europe, they should submit their Client ID to Partner Central as soon as possible.
+    If the Partner is located in North America or Europe, they should submit their Client ID to Partner Central as soon as possible. Access Partner Central at [https://partnercentral.amazon.com/](https://partnercentral.amazon.com/) and follow the integration setup guide.
 
     If the Partner is located in Asia Pacific, Australia or Mexico, they should submit the Client ID to their Amazon representative as soon as possible.
 
@@ -217,6 +217,13 @@ info:
     
     #### Are there any requirements for the format of the latitude and longitude properties?
     We support positive and negative digits and `.` (dot) as the decimal separator. The values must always be to 6 decimal places, ranging from -90 to 90 for latitude and -180 to 180 for longitude. The combination of 0,0 for both latitude and longitude will throw an error. 
+    
+    #### I'm getting CORS errors when consuming the sandbox URL from an S3-hosted web application. How can I resolve this?
+    The Amazon Access Points API does not currently support Cross-Origin Resource Sharing (CORS) headers for direct browser requests. If you're building a client-side application hosted on S3, consider the following workarounds:
+    - Route API calls through a backend server (e.g., Lambda, EC2) that proxies requests to the API.
+    - Use Amazon API Gateway as a proxy to add CORS headers.
+    - For development/testing, use a browser extension to disable CORS checks, but this is not suitable for production.
+    Contact your Amazon representative if CORS support is required for your use case. 
     
     #### Why am I not able to get the LWA token while invoking api.amazon.com?
     Please validate following:
