@@ -1,3 +1,4 @@
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+now this url: "" # the base hostname & protocol for your site, e.g. http://example.com
 baseurl: "" # the subpath of your site, e.g. /blog
 title: "Amazon Hub Counter API Docs" # the name of your site, e.g. ACME Corp.
+lang: "en-US"
