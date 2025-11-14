@@ -23,6 +23,6 @@ title: "Amazon Hub Counter API Docs"
   </head>
   <body>
     <redoc spec-url='amazon-hub-counter-openapi.yaml'></redoc>
-    <script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js"> </script>
   </body>
 </html>
